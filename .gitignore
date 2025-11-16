@@ -72,3 +72,7 @@ apps/game-server/debug/
 # -----------------------------
 .cache/
 .eslintcache/
+apps/solana-program/arena_program/solana-release-*
+apps/solana-program/arena_program/target/
+*.bz2
+*.tar.bz2
