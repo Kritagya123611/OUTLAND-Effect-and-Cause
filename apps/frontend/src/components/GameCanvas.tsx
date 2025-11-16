@@ -19,30 +19,36 @@ export default function GameCanvas() {
     script.onload = () => {
       console.log("Game script loaded.");
 
-      if (!window.GameClient) {
-        console.error("GameClient not found on window");
+      if (!window.GameClient?.startGame) {
+        console.error("startGame() missing on window.GameClient");
         return;
       }
 
-      if (!window.GameClient.startGame) {
-        console.error("startGame() not found.");
-        return;
-      }
+      const canvas = canvasRef.current!;
+      resizeCanvas(canvas);
 
-      if (canvasRef.current) {
-        window.GameClient.startGame(canvasRef.current);
-      }
+      // Resize game when window resizes
+      window.addEventListener("resize", () => resizeCanvas(canvas));
+
+      window.GameClient.startGame(canvas);
     };
 
     document.body.appendChild(script);
   }, []);
 
+  function resizeCanvas(canvas: HTMLCanvasElement) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
   return (
     <canvas
       ref={canvasRef}
-      width={800}
-      height={600}
-      style={{ width: "800px", height: "600px" }}
+      style={{
+        width: "100vw",
+        height: "100vh",
+        display: "block",
+      }}
     />
   );
 }
