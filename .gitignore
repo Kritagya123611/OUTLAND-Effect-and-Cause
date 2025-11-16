@@ -1,0 +1,74 @@
+# -----------------------------
+# Node / pnpm / Yarn
+# -----------------------------
+node_modules/
+pnpm-lock.yaml
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# -----------------------------
+# Build outputs (Next.js, Vite, Node)
+# -----------------------------
+dist/
+build/
+out/
+.next/
+.vercel/
+coverage/
+
+# -----------------------------
+# Environment / Secrets
+# -----------------------------
+.env
+.env.local
+.env.*.local
+
+# Solana keys
+*.json
+*.key
+*.pem
+
+# -----------------------------
+# IDE / Editor
+# -----------------------------
+.vscode/
+.idea/
+*.swp
+
+# -----------------------------
+# OS Files
+# -----------------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------------
+# TypeScript
+# -----------------------------
+*.tsbuildinfo
+
+# -----------------------------
+# Frontend (React / Next)
+# -----------------------------
+**/public/game/bundle.js
+**/public/game/*.map
+
+# -----------------------------
+# Game Client (Vite)
+# -----------------------------
+apps/game-client/.vite/
+apps/game-client/dist/
+
+# -----------------------------
+# Backend temp files
+# -----------------------------
+apps/game-server/tmp/
+apps/game-server/debug/
+
+# -----------------------------
+# Cache
+# -----------------------------
+.cache/
+.eslintcache/
