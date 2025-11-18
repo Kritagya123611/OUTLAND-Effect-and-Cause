@@ -1,3 +1,4 @@
+//GameCanvas.tsx(inside apps/frontend/src/components/)
 import { useEffect, useRef } from "react";
 
 declare global {
