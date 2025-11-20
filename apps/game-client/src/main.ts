@@ -1,745 +1,487 @@
 type World = "light" | "shadow";
 type Vec2 = { x: number; y: number };
 
-// Interface definition for PowerUp
+// --- Configuration ---
+const CONFIG = {
+    canvasWidth: 800,
+    canvasHeight: 600,
+    colors: {
+        light: { primary: "#00d2ff", secondary: "#005f7f", text: "#ffffff" },
+        shadow: { primary: "#b026ff", secondary: "#4a0072", text: "#ffffff" }
+    },
+    // Character Visual Settings
+    character: {
+        width: 64,  
+        height: 64, 
+        scale: 1.5  
+    },
+    // Gameplay Timing
+    gameplay: {
+        attackDuration: 300 
+    }
+};
+
 interface PowerUp {
-  x: number;
-  y: number;
-  world: World;
-  type: "speed" | "heal" | "shield" | "damage" | "invisibility" | "slow_trap";
-  activeUntil: number;
+  x: number; y: number; world: World;
+  type: "speed" | "heal" | "shield" | "damage" | "invisibility" | "slow_trap";
+  activeUntil: number;
 }
 
-// Match Statistics Tracker (Feature #4: On-Chain Match Record)
 const GameStats = {
-    matchStartTime: 0,
-    playerWorldShifts: 0,
-    botWorldShifts: 0,
-    playerHitsLanded: 0,
-    botHitsLanded: 0,
-    playerDeaths: 0,
-    botDeaths: 0,
+    matchStartTime: 0, playerWorldShifts: 0, botWorldShifts: 0,
+    playerHitsLanded: 0, botHitsLanded: 0, playerDeaths: 0, botDeaths: 0,
 };
 
-// Desync State (Feature #7: World Desync Mechanic)
-const Desync = {
-    level: 0, // 0 to 100
-    decayRate: 0.5, // How fast desync falls per second
-    gainRate: 5,    // Desync gained per successful hit
-};
+const Desync = { level: 0, decayRate: 0.5, gainRate: 5 };
 
-// Global Window for client entry and Tone.js
 declare global {
-  interface Window {
-    GameClient?: any;
-    Tone?: any;
-  }
+  interface Window { GameClient?: any; Tone?: any; }
 }
 
 /* -------------------------------------------------------
-  Utility
+  Asset Loader
+------------------------------------------------------- */
+const sprites = {
+    character: new Image(),
+    bgLight: new Image(),  // NEW
+    bgShadow: new Image()  // NEW
+};
+
+// Load Assets
+sprites.character.src = "/assets/knight/Character.png"; 
+sprites.bgLight.src = "/assets/cave_bg.jpg";    // Ensure this file exists
+sprites.bgShadow.src = "/assets/space_bg.jpg";  // Ensure this file exists
+
+// Load Font
+const fontLink = document.createElement('link');
+fontLink.href = "https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap";
+fontLink.rel = "stylesheet";
+document.head.appendChild(fontLink);
+
+/* -------------------------------------------------------
+  Utility & Audio
 ------------------------------------------------------- */
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 const dist = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 
-// Screen Shake Utility (Feature #11)
 let shakeMagnitude = 0;
-
 function applyShake(magnitude: number, durationMs: number) {
-    shakeMagnitude = Math.max(shakeMagnitude, magnitude);
-    setTimeout(() => {
-        shakeMagnitude = 0;
-    }, durationMs);
+    shakeMagnitude = Math.max(shakeMagnitude, magnitude);
+    setTimeout(() => { shakeMagnitude = 0; }, durationMs);
 }
 
-// Sound Effects Initialization (Feature #14)
-let shiftSynth: any;
-let hitSynth: any;
-
+let hitSynth: any, swingSynth: any;
 function initAudio() {
-    if (window.Tone) {
-        // Shift sound: dramatic "whoosh"
-        shiftSynth = new window.Tone.NoiseSynth({
-            noise: { type: 'pink' },
-            envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 }
-        }).toDestination();
-
-        // Hit sound: sharp, percussive sound
-        hitSynth = new window.Tone.MembraneSynth().toDestination();
-    }
+    if (window.Tone) {
+        try {
+            hitSynth = new window.Tone.MetalSynth({
+                envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
+                harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5
+            }).toDestination();
+            swingSynth = new window.Tone.NoiseSynth({ 
+                noise: { type: 'white' }, 
+                envelope: { attack: 0.001, decay: 0.1, sustain: 0 } 
+            }).toDestination();
+        } catch (e) {}
+    }
 }
 
-function playSound(type: 'shift' | 'hit', note?: string) {
-    if (window.Tone) {
-        try {
-            if (type === 'shift') {
-                shiftSynth.triggerAttackRelease("8n");
-            } else if (type === 'hit') {
-                hitSynth.triggerAttackRelease(note || "C4", "16n");
-            }
-        } catch (e) {
-            // Tone.js might fail if audio context isn't running. Ignore in production.
-        }
-    }
+function playSound(type: 'hit' | 'swing') {
+    if (window.Tone) {
+        try {
+            if (type === 'hit') hitSynth.triggerAttackRelease("32n");
+            else if (type === 'swing') swingSynth.triggerAttackRelease("16n");
+        } catch (e) {}
+    }
 }
 
 /* -------------------------------------------------------
-  Main Entry
+  Main Entry
 ------------------------------------------------------- */
 function startGame(canvas: HTMLCanvasElement) {
-    // NEW: Background images for each world
-const bgLight = new Image();
-bgLight.src = "/assets/cave_bg.jpg";   // put your file path
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d")!;
+  canvas.width = CONFIG.canvasWidth;
+  canvas.height = CONFIG.canvasHeight;
 
-const bgShadow = new Image();
-bgShadow.src = "/assets/space_bg.jpg"; // put your file path
+  const toneScript = document.createElement("script");
+  toneScript.src = "https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js";
+  toneScript.onload = initAudio;
+  document.body.appendChild(toneScript);
 
-function drawBackground(
-    ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
-    world: World,
-    desyncLevel: number
-) {
-    const img = world === "light" ? bgLight : bgShadow;
+  GameStats.matchStartTime = Date.now();
 
-    if (img.complete) {
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    } else {
-        img.onload = () => {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        };
+  // --- Entities ---
+  const player = {
+    x: 200, y: 300, vx: 0, vy: 0, speed: 220, world: "light" as World,
+    hp: 100, maxHp: 100, lastShift: 0, dashCooldown: 3000, deadUntil: 0,
+    shieldUntil: 0, speedBoostUntil: 0, damageBoostUntil: 0, invisibleUntil: 0,
+    baseDamage: 10, currentDamage: 10, isSlowedUntil: 0,
+    facingRight: true,
+    isAttacking: false,
+    attackTimer: 0,
+    attackCooldown: 0
+  };
+
+  const bot = {
+    x: 600, y: 300, vx: 0, vy: 0, world: "shadow" as World,
+    hp: 100, maxHp: 100, decisionCooldown: 0,
+    facingRight: false,
+    isAttacking: false,
+    attackTimer: 0,
+    attackCooldown: 0
+  };
+
+  const obstacles: { x: number; y: number; w: number; h: number; world?: World }[] = [
+    { x: 300, y: 200, w: 80, h: 20 }, { x: 450, y: 350, w: 120, h: 25 },
+    { x: 100, y: 100, w: 30, h: 150, world: "shadow" }, { x: 650, y: 50, w: 150, h: 30, world: "shadow" }, 
+    { x: 150, y: 400, w: 100, h: 30, world: "light" }, { x: 500, y: 100, w: 30, h: 100, world: "light" }, 
+  ];
+
+  const powerups: PowerUp[] = [];
+  let powerupSpawnCooldown = 0; 
+  const particles: any[] = [];
+  const keys = new Set<string>();
+  const mouse = { x: 0, y: 0 };
+
+  window.addEventListener("keydown", (e) => {
+    keys.add(e.key.toLowerCase());
+    if (e.code === "Space") {
+      const now = Date.now();
+      const shiftPenalty = Desync.level > 50 ? 2 : 1; 
+      if (now - player.lastShift >= player.dashCooldown * shiftPenalty) {
+        player.world = player.world === "light" ? "shadow" : "light";
+        player.lastShift = now;
+        GameStats.playerWorldShifts++; 
+        addParticles(player.x, player.y, player.world === "light" ? "#00d2ff" : "#b026ff", 30, 3);
+        applyShake(5, 150); 
+      }
     }
+  });
 
-    if (desyncLevel > 70) {
-        ctx.fillStyle = `rgba(255, 0, 255, ${(desyncLevel / 100) * 0.15})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-}
+  window.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
+  window.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+  });
+  window.addEventListener("mousedown", () => {
+    if (player.deadUntil || player.attackCooldown > 0) return;
+    player.isAttacking = true;
+    player.attackCooldown = 400;
+    player.attackTimer = CONFIG.gameplay.attackDuration; 
+    playSound('swing');
+    checkMeleeHit(player, bot);
+  });
 
+  function checkMeleeHit(attacker: any, defender: any) {
+      if (defender.deadUntil > 0 || attacker.world !== defender.world) return;
+      const d = dist(attacker, defender);
+      const range = 80; 
+      const isFacingTarget = (attacker.facingRight && defender.x > attacker.x) || (!attacker.facingRight && defender.x < attacker.x);
+      
+      if (d < range && isFacingTarget) {
+          const dmg = attacker.currentDamage;
+          if (defender === player && Date.now() < player.shieldUntil) {
+             // Blocked
+          } else {
+              defender.hp -= dmg;
+              applyShake(5, 100);
+              addParticles(defender.x, defender.y, "#ff0000", 10, 2);
+              playSound('hit');
+              if (defender === bot) {
+                  Desync.level = Math.min(100, Desync.level + Desync.gainRate);
+                  GameStats.playerHitsLanded++;
+              }
+          }
+      }
+  }
 
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d")!;
-  canvas.width = 800;
-  canvas.height = 600;
+  function collides(x: number, y: number, w: number, h: number, targetWorld: World) {
+    return obstacles.some((o) => {
+        const existsInTargetWorld = !o.world || o.world === targetWorld;
+        if (!existsInTargetWorld) return false;
+        return x < o.x + o.w && x + w > o.x && y < o.y + o.h && y + h > o.y;
+    });
+  }
 
-  // Load Tone.js for audio (Feature #14)
-  const toneScript = document.createElement("script");
-  toneScript.src = "https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js";
-  toneScript.onload = initAudio;
-  document.body.appendChild(toneScript);
-
-  GameStats.matchStartTime = Date.now(); // Start match timer
-
-  // Particle trail color definitions
-  const particleColors = {
-      light: { primary: "#fff6d1", trail: "#ffff00" }, // Light: Space/White
-      shadow: { primary: "#b9a7ff", trail: "#ff00ff" } // Shadow: Caverns/Purple
-  };
-
-
-  /* -------------------------------------------------------
-    PLAYER / BOT / OBSTACLES (State Initialization)
-  ------------------------------------------------------- */
-  const player = {
-    x: 200, y: 300, vx: 0, vy: 0, speed: 220, world: "light" as World,
-    hp: 100, maxHp: 100, lastShift: 0, dashCooldown: 3000, deadUntil: 0,
-    shieldUntil: 0, speedBoostUntil: 0, damageBoostUntil: 0, invisibleUntil: 0,
-    baseDamage: 15, currentDamage: 15, isSlowedUntil: 0,
-  };
-
-  const bot = {
-    x: 600, y: 300, vx: 0, vy: 0, world: "shadow" as World,
-    hp: 100, maxHp: 100, fireCooldown: 0, decisionCooldown: 0,
-  };
-
-  const obstacles: { x: number; y: number; w: number; h: number; world?: World }[] = [
-    { x: 300, y: 200, w: 80, h: 20 },
-    { x: 450, y: 350, w: 120, h: 25 },
-    { x: 100, y: 100, w: 30, h: 150, world: "shadow" }, 
-    { x: 650, y: 50, w: 150, h: 30, world: "shadow" }, 
-    { x: 150, y: 400, w: 100, h: 30, world: "light" }, 
-    { x: 500, y: 100, w: 30, h: 100, world: "light" }, 
-  ];
-
-  function collides(x: number, y: number, w: number, h: number, targetWorld: World) {
-    return obstacles.some((o) => {
-        const existsInTargetWorld = !o.world || o.world === targetWorld;
-        if (!existsInTargetWorld) return false;
-        return x < o.x + o.w && x + w > o.x && y < o.y + o.h && y + h > o.y;
-    });
-  }
-
-  // Powerup state and logic
-  const powerups: PowerUp[] = [];
-  let powerupSpawnCooldown = 0; 
   function spawnPowerUp() {
     const world: World = Math.random() < 0.5 ? "light" : "shadow";
     const x = rand(50, canvas.width - 50);
     const y = rand(50, canvas.height - 50);
-
-    let type: PowerUp["type"];
-    if (world === "light") {
-        const types: PowerUp["type"][] = ["speed", "heal", "shield"];
-        type = types[Math.floor(Math.random() * types.length)];
-    } else {
-        const types: PowerUp["type"][] = ["damage", "invisibility", "slow_trap"];
-        type = types[Math.floor(Math.random() * types.length)];
+    const types: PowerUp["type"][] = world === "light" ? ["speed", "heal", "shield"] : ["damage", "invisibility", "slow_trap"];
+    const type = types[Math.floor(Math.random() * types.length)];
+    if (!powerups.some(p => dist({x,y}, p) < 50) && !collides(x, y, 10, 10, world)) {
+        powerups.push({ x, y, world, type, activeUntil: 0 });
     }
-
-    if (powerups.some(p => dist({x,y}, p) < 50) || collides(x, y, 10, 10, world)) {
-        return;
-    }
-    powerups.push({ x, y, world, type, activeUntil: 0 });
   }
 
-  // Particle state
-  const particles: any[] = [];
-  function addParticles(x: number, y: number, color: string, count = 16) {
-    for (let i = 0; i < count; i++) {
-      particles.push({
-        x, y,
-        vx: rand(-2, 2),
-        vy: rand(-2, 2),
-        life: rand(150, 300),
-        color,
-      });
-    }
-  }
+  function addParticles(x: number, y: number, color: string, count = 16, speed = 1) {
+    for (let i = 0; i < count; i++) {
+      particles.push({ x, y, vx: rand(-2, 2) * speed, vy: rand(-2, 2) * speed, life: rand(200, 400), color });
+    }
+  }
 
-  // Bullet state and logic
-  const bullets: any[] = [];
-  function fireBullet(src: typeof player | typeof bot) {
-    const dmg = src === player ? player.currentDamage : 15;
-    const b = {
-      x: src.x, y: src.y,
-      vx: (src === player ? 1 : -1) * 5,
-      vy: rand(-0.8, 0.8),
-      world: src.world,
-      dmg: dmg, 
-      owner: src === player ? "player" : "bot",
-    };
-    bullets.push(b);
-    playSound('hit', src.world === 'light' ? 'C5' : 'G4'); 
-  }
-  
-  // Kill Feed
-  const killFeed: string[] = [];
-  function pushKill(msg: string) {
-    killFeed.unshift(msg);
-    if (killFeed.length > 5) killFeed.pop();
-  }
+  // --- Game Loop ---
+  let lastTime = performance.now();
+  function loop() {
+    const now = performance.now();
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
 
+    Desync.level = Math.max(0, Desync.level - Desync.decayRate * dt * 10);
+    
+    // Player Logic
+    player.currentDamage = Date.now() < player.damageBoostUntil ? player.baseDamage * 2 : player.baseDamage;
+    const currentSpeed = player.speed * (Date.now() < player.speedBoostUntil ? 1.5 : 1) * (Date.now() < player.isSlowedUntil ? 0.5 : 1);
+    player.attackCooldown = Math.max(0, player.attackCooldown - dt * 1000);
+    
+    let ax = 0, ay = 0;
+    if (!player.isAttacking) { 
+        if (keys.has("w")) ay -= 1; if (keys.has("s")) ay += 1;
+        if (keys.has("a")) ax -= 1; if (keys.has("d")) ax += 1;
+    }
+    const len = Math.hypot(ax, ay) || 1;
+    player.vx = (ax / len) * currentSpeed * dt; 
+    player.vy = (ay / len) * currentSpeed * dt; 
+    
+    if (player.isAttacking) {
+        player.attackTimer -= dt * 1000;
+        if (player.attackTimer <= 0) player.isAttacking = false;
+    }
 
-  /* -------------------------------------------------------
-    Input
-  ------------------------------------------------------- */
-  const keys = new Set<string>();
-  window.addEventListener("keydown", (e) => {
-    keys.add(e.key.toLowerCase());
+    if (mouse.x > player.x) player.facingRight = true; else player.facingRight = false;
 
-    if (e.code === "Space") {
-      const now = Date.now();
-      const shiftPenalty = Desync.level > 50 ? 2 : 1; 
-      const actualCooldown = player.dashCooldown * shiftPenalty;
+    const nextX = player.x + player.vx * 60 * dt;
+    const nextY = player.y + player.vy * 60 * dt;
+    if (!collides(nextX - 15, player.y - 15, 30, 30, player.world)) player.x = nextX;
+    if (!collides(player.x - 15, nextY - 15, 30, 30, player.world)) player.y = nextY;
 
-      if (now - player.lastShift >= actualCooldown) {
-        player.world = player.world === "light" ? "shadow" : "light";
-        player.lastShift = now;
-        
-        GameStats.playerWorldShifts++; 
+    // Spawners
+    powerupSpawnCooldown -= dt * 1000;
+    if (powerupSpawnCooldown <= 0 && powerups.length < 5) { spawnPowerUp(); powerupSpawnCooldown = rand(2000, 5000); }
 
-        addParticles(player.x, player.y, player.world === "light" ? "#fff6d1" : "#b9a7ff", 30);
-        applyShake(5, 100); 
-        playSound('shift');
-      }
-    }
-  });
+    // Bot AI
+    if (bot.hp > 0) {
+        bot.attackCooldown = Math.max(0, bot.attackCooldown - dt * 1000);
 
-  window.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
+        if (!bot.isAttacking) {
+            bot.decisionCooldown -= dt * 1000;
+            if (bot.decisionCooldown <= 0) {
+                bot.decisionCooldown = 300;
+                const d = dist(player, bot);
+                
+                if (d > 50) { // Chase
+                    bot.vx = (player.x - bot.x) * 0.015; 
+                    bot.vy = (player.y - bot.y) * 0.015;
+                } else { // Attack
+                    bot.vx = 0; bot.vy = 0;
+                    if (bot.attackCooldown <= 0 && player.world === bot.world && Date.now() > player.invisibleUntil) {
+                        bot.isAttacking = true;
+                        bot.attackCooldown = 1000;
+                        bot.attackTimer = CONFIG.gameplay.attackDuration;
+                        playSound('swing');
+                        setTimeout(() => checkMeleeHit(bot, player), 200);
+                    }
+                }
 
-  window.addEventListener("mousedown", () => {
-    if (player.deadUntil) return;
-    fireBullet(player);
-  });
+                if (player.world !== bot.world && d < 400 && Math.random() < 0.05) {
+                    bot.world = bot.world === "light" ? "shadow" : "light";
+                    GameStats.botWorldShifts++;
+                    addParticles(bot.x, bot.y, bot.world === "light" ? CONFIG.colors.light.primary : CONFIG.colors.shadow.primary, 20, 2);
+                }
+            }
+        
+            const bNextX = bot.x + bot.vx * dt * 60;
+            const bNextY = bot.y + bot.vy * dt * 60;
+            if (!collides(bNextX - 15, bNextY - 15, 30, 30, bot.world)) { bot.x = bNextX; bot.y = bNextY; }
+        }
 
-  /* -------------------------------------------------------
-    BOT AI LOGIC (Feature #3: SHIFT Prediction)
-  ------------------------------------------------------- */
-  function updateBot(dt: number) {
-    if (bot.hp <= 0) return;
+        if (bot.isAttacking) {
+             bot.attackTimer -= dt * 1000;
+             if (bot.attackTimer <= 0) bot.isAttacking = false;
+        }
+        if (player.x > bot.x) bot.facingRight = true; else bot.facingRight = false;
+    }
 
-    if (bot.decisionCooldown <= 0) {
-      bot.decisionCooldown = 600;
+    // Powerups & Respawn
+    for (let i = powerups.length - 1; i >= 0; i--) {
+        const p = powerups[i];
+        if (dist(p, player) < 30 && p.world === player.world) {
+            if (p.type === 'heal') player.hp = Math.min(player.maxHp, player.hp + 25);
+            else if (p.type === 'speed') player.speedBoostUntil = now + 3000;
+            else if (p.type === 'shield') player.shieldUntil = now + 3000;
+            else if (p.type === 'damage') player.damageBoostUntil = now + 3000;
+            else if (p.type === 'invisibility') player.invisibleUntil = now + 2000;
+            else if (p.type === 'slow_trap') player.isSlowedUntil = now + 3000;
+            powerups.splice(i, 1); 
+        }
+    }
+    if (player.hp <= 0 && !player.deadUntil) { player.deadUntil = now + 2000; GameStats.botDeaths++; }
+    if (player.deadUntil && now > player.deadUntil) { player.deadUntil = 0; player.hp = player.maxHp; player.x = 200; player.y = 300; }
+    if (bot.hp <= 0) { bot.hp = bot.maxHp; bot.x = 600; bot.y = 300; GameStats.playerDeaths++; }
 
-      const d = dist(player, bot);
+    // Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 16;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
 
-      // Movement: Chase/Flee
-      if (d < 200) {
-        bot.vx = (bot.x - player.x) * 0.02;
-        bot.vy = (bot.y - player.y) * 0.02;
-      } else {
-        bot.vx = (player.x - bot.x) * 0.015;
-        bot.vy = (player.y - bot.y) * 0.015;
-      }
-      
-      // Simple Collision Avoidance
-      const nextX = bot.x + bot.vx * dt * 60;
-      const nextY = bot.y + bot.vy * dt * 60;
-      if (collides(nextX - 18, nextY - 18, 36, 36, bot.world)) {
-        bot.vx *= -1; 
-        bot.vy *= -1;
-      }
+    // --- RENDER ---
+    const shakeX = shakeMagnitude > 0 ? rand(-shakeMagnitude, shakeMagnitude) : 0;
+    const shakeY = shakeMagnitude > 0 ? rand(-shakeMagnitude, shakeMagnitude) : 0;
+    ctx.save(); ctx.translate(shakeX, shakeY);
 
-      // Fire Logic
-      if (bot.fireCooldown <= 0 && d < 450 && player.world === bot.world && Date.now() > player.invisibleUntil) {
-          fireBullet(bot);
-          bot.fireCooldown = 700;
-      }
+    drawBackground(ctx, player.world, canvas.width, canvas.height, Desync.level);
+    obstacles.forEach(o => { if(!o.world || o.world === player.world) drawSciFiObstacle(ctx, o, player.world); });
+    powerups.forEach(p => { if(p.world === player.world) drawSciFiPowerup(ctx, p); });
 
-      // SHIFT Prediction AI
-      const playerBulletCount = bullets.filter(b => b.owner === 'player' && b.world === bot.world).length;
-      const playerInBotWorld = player.world === bot.world;
-      const botHealthLow = bot.hp < 30;
+    // Draw Characters
+    if (!player.deadUntil && (player.world === "light" || Date.now() > player.invisibleUntil)) {
+        drawCharacter(ctx, player, player.world === "light" ? CONFIG.colors.light.primary : CONFIG.colors.shadow.primary);
+    }
+    if (bot.hp > 0 && bot.world === player.world) {
+        drawCharacter(ctx, bot, bot.world === "light" ? CONFIG.colors.light.primary : CONFIG.colors.shadow.primary);
+    }
 
-      let shouldShift = false;
+    particles.forEach(p => {
+        ctx.globalAlpha = Math.max(0, p.life / 400); ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    drawLightingSystem(ctx, player, canvas.width, canvas.height);
+    ctx.restore();
 
-      if (playerBulletCount > 0) { shouldShift = true; } 
-      else if (!playerInBotWorld && d < 400 && Math.random() < 0.6) { shouldShift = true; } 
-      else if (botHealthLow && bot.world === 'light' && Math.random() < 0.8) { shouldShift = true; }
-      
-      if (shouldShift) {
-        bot.world = bot.world === "light" ? "shadow" : "light";
-        GameStats.botWorldShifts++;
-      }
-    }
-
-    bot.x += bot.vx * dt * 60;
-    bot.y += bot.vy * dt * 60;
-
-    bot.decisionCooldown -= dt * 1000;
-    bot.fireCooldown -= dt * 1000;
-  }
-
-  /* -------------------------------------------------------
-    Main Loop
-  ------------------------------------------------------- */
-  let lastTime = performance.now();
-
-  function loop() {
-    const now = performance.now();
-    const dt = (now - lastTime) / 1000;
-    lastTime = now;
-
-    /* ------------------------------
-      World Desync Update (Feature #7)
-    ------------------------------ */
-    Desync.level = Math.max(0, Desync.level - Desync.decayRate * dt * 10); 
-
-    if (Desync.level > 50) {
-        canvas.style.filter = `hue-rotate(${rand(-2, 2)}deg) saturate(${1 + Desync.level / 200})`;
-    } else {
-        canvas.style.filter = 'none';
-    }
-
-    // Update effects/speed
-    player.currentDamage = Date.now() < player.damageBoostUntil ? player.baseDamage * 2 : player.baseDamage;
-    const isSlowed = Date.now() < player.isSlowedUntil;
-    const currentSpeed = player.speed * (Date.now() < player.speedBoostUntil ? 1.5 : 1) * (isSlowed ? 0.5 : 1);
-    
-    // Powerup Spawning
-    powerupSpawnCooldown -= dt * 1000;
-    if (powerupSpawnCooldown <= 0 && powerups.length < 5) {
-        spawnPowerUp();
-        powerupSpawnCooldown = rand(2000, 5000);
-    }
-
-    /* ------------------------------
-      Movement / Collisions / Game Logic
-    ------------------------------ */
-    let ax = 0, ay = 0;
-    if (keys.has("w")) ay -= 1;
-    if (keys.has("s")) ay += 1;
-    if (keys.has("a")) ax -= 1;
-    if (keys.has("d")) ax += 1;
-
-    const len = Math.hypot(ax, ay) || 1;
-    player.vx = (ax / len) * currentSpeed * dt; 
-    player.vy = (ay / len) * currentSpeed * dt; 
-
-    const nextX = player.x + player.vx * 60 * dt;
-    const nextY = player.y + player.vy * 60 * dt;
-    
-    if (!collides(nextX - 18, player.y - 18, 36, 36, player.world)) { player.x = nextX; }
-    if (!collides(player.x - 18, nextY - 18, 36, 36, player.world)) { player.y = nextY; }
-
-    updateBot(dt);
-
-    // Power-Up Collection Logic
-    for (let i = powerups.length - 1; i >= 0; i--) {
-        const p = powerups[i];
-        if (dist(p, player) < 25 && p.world === player.world) { 
-            const duration = 3000; 
-
-            switch (p.type) {
-                case "speed": player.speedBoostUntil = now + duration; break;
-                case "heal": player.hp = Math.min(player.maxHp, player.hp + 25); break;
-                case "shield": player.shieldUntil = now + duration; break;
-                case "damage": player.damageBoostUntil = now + duration; break;
-                case "invisibility": player.invisibleUntil = now + 1000; break;
-                case "slow_trap": player.isSlowedUntil = now + duration; break;
-            }
-
-            addParticles(p.x, p.y, p.world === "light" ? "#fff6d1" : "#b9a7ff");
-            pushKill(`Picked up ${p.type}!`);
-            powerups.splice(i, 1);
-        }
-    }
-    
-    // Bullet Update Logic
-    for (let i = bullets.length - 1; i >= 0; i--) {
-      const b = bullets[i];
-      const speedModifier = 1 + (Desync.level / 100) * rand(-0.2, 0.2); 
-      b.x += b.vx * 4 * speedModifier;
-      b.y += b.vy * 4 * speedModifier;
-
-      if (b.x < 0 || b.x > canvas.width || collides(b.x - 5, b.y - 5, 10, 10, b.world)) {
-        if (b.x > 0 && b.x < canvas.width) addParticles(b.x, b.y, "rgba(255,255,255,0.5)", 5);
-        bullets.splice(i, 1);
-        continue;
-      }
-
-      const isPlayerHit = b.owner === "bot" && player.world === b.world && dist(b, player) < 22;
-      const isBotHit = b.owner === "player" && bot.world === b.world && dist(b, bot) < 22;
-
-      if (isPlayerHit) {
-        if (Date.now() > player.shieldUntil) player.hp -= b.dmg;
-        else pushKill("Shield blocked damage!");
-        applyShake(10, 50); 
-        addParticles(player.x, player.y, "#ff8080");
-        bullets.splice(i, 1);
-        continue;
-      }
-
-      if (isBotHit) {
-        bot.hp -= b.dmg;
-        Desync.level = Math.min(100, Desync.level + Desync.gainRate); 
-        GameStats.playerHitsLanded++; 
-        applyShake(5, 50); 
-        addParticles(bot.x, bot.y, "#80ff80");
-        bullets.splice(i, 1);
-        continue;
-      }
-    }
-    
-    // Booster Particle Trail
-    if (Math.hypot(player.vx, player.vy) > 0.1) {
-        const color = particleColors[player.world].trail;
-        addParticles(player.x - player.vx * 10, player.y - player.vy * 10, color, 1);
-    }
-    if (Math.hypot(bot.vx, bot.vy) > 0.1) {
-        const color = particleColors[bot.world].trail;
-        addParticles(bot.x - bot.vx * 10, bot.y - bot.vy * 10, color, 1);
-    }
-
-
-    // Death/Respawn Logic
-    if (player.hp <= 0 && !player.deadUntil) {
-      player.deadUntil = now + 2000;
-      pushKill("Bot eliminated you!");
-      GameStats.botDeaths++; 
-    }
-    if (player.deadUntil && now > player.deadUntil) {
-      player.deadUntil = 0;
-      player.hp = player.maxHp;
-      player.x = 200;
-      player.y = 300;
-      player.shieldUntil = 0;
-      player.speedBoostUntil = 0;
-      player.damageBoostUntil = 0;
-      player.invisibleUntil = 0;
-      player.isSlowedUntil = 0;
-    }
-
-    if (bot.hp <= 0) {
-      pushKill("You defeated the Bot! Writing match record to Solana...");
-      GameStats.playerDeaths++; 
-      bot.hp = bot.maxHp;
-      bot.x = 600;
-      bot.y = 300;
-    }
-
-    // Particle cleanup
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.life -= 16;
-      if (p.life <= 0) particles.splice(i, 1);
-    }
-
-    /* ------------------------------
-      RENDER
-    ------------------------------ */
-    const shakeX = shakeMagnitude > 0 ? rand(-shakeMagnitude, shakeMagnitude) : 0;
-    const shakeY = shakeMagnitude > 0 ? rand(-shakeMagnitude, shakeMagnitude) : 0;
-    
-    // Draw Dynamic Background (Feature #12)
-    drawBackground(ctx, canvas, player.world, Desync.level);
-
-    // draw obstacles
-    obstacles.forEach((o) => {
-        if (!o.world || o.world === player.world) {
-            drawObstacle(ctx, o, player.world, Desync.level, shakeX, shakeY);
-        }
-    });
-
-    // draw powerups
-    powerups.forEach((p) => {
-        if (p.world === player.world) {
-            drawPowerUp(ctx, p, shakeX, shakeY);
-        }
-    });
-
-    // draw bullets
-    bullets.forEach((b) => {
-        if (b.world === player.world) {
-            drawBullet(ctx, b, shakeX, shakeY);
-        }
-    });
-
-    // draw entities
-    const playerColor = particleColors.light.primary;
-    const botColor = particleColors.shadow.primary;
-
-    if (Date.now() > player.invisibleUntil) {
-        drawEntity(ctx, player, playerColor, Date.now() < player.shieldUntil, Date.now() < player.speedBoostUntil, shakeX, shakeY);
-    } else {
-        drawEntity(ctx, player, "rgba(255, 255, 255, 0.2)", false, false, shakeX, shakeY);
-    }
-    
-    if (bot.world === player.world) {
-        drawEntity(ctx, bot, botColor, false, false, shakeX, shakeY);
-    }
-    
-    // particles
-    particles.forEach((p) => {
-      ctx.globalAlpha = Math.max(0.1, p.life / 300);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(p.x + shakeX, p.y + shakeY, 3, 3);
-    });
-    ctx.globalAlpha = 1;
-
-    // HUD / Status text
-    drawHUD(ctx, player, canvas, Desync.level); 
-
-    // kill feed
-    ctx.font = "14px Inter";
-    ctx.fillStyle = "#fff";
-    for (let i = 0; i < killFeed.length; i++) {
-      ctx.fillText(killFeed[i], 12, 22 + i * 18);
-    }
-
-    requestAnimationFrame(loop);
-  }
-
-  requestAnimationFrame(loop);
+    drawSciFiHUD(ctx, player, Desync.level, canvas.width, canvas.height);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
 }
 
 /* -------------------------------------------------------
-  NEW: Custom Drawing Functions (Max Polish)
+  RENDERERS
 ------------------------------------------------------- */
 
+function drawCharacter(ctx: CanvasRenderingContext2D, entity: any, tintColor: string) {
+    const img = sprites.character;
+    if (!img.complete) return;
 
-// Draws an entity with better detail (Robot)
-function drawEntity(ctx: CanvasRenderingContext2D, e: any, color: string, isShielded: boolean, isBoosted: boolean, shakeX: number, shakeY: number) {
-  const x = e.x + shakeX;
-  const y = e.y + shakeY;
-  const size = 18;
-  const isFacingRight = e.vx > 0; // Direction based on velocity
-
-  // --- Robot Body (Rectangle for better robot look) ---
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  // Using custom roundedRect for compatibility
-  drawRoundedRect(ctx, x - size, y - size, size * 2, size * 2, 5);
-  ctx.fill();
-  
-  // --- Head/Cockpit (Darker detail) ---
-  ctx.fillStyle = "#333";
-  ctx.beginPath();
-  ctx.arc(x + (isFacingRight ? 10 : -10), y - 10, 6, 0, Math.PI * 2);
-  ctx.fill();
-
-  // --- Thrusters (Visual legs/boosters) ---
-  ctx.fillStyle = isBoosted ? "#ffaa00" : "#666";
-  const thrusterSize = 5;
-  const offset = isFacingRight ? -size : size; // Thruster opposite movement
-  ctx.fillRect(x + offset - thrusterSize/2, y + size - thrusterSize/2, thrusterSize, thrusterSize);
-  
-  // hp bar (relative to the shaken position)
-  ctx.fillStyle = "rgba(255,255,255,0.2)";
-  ctx.fillRect(x - 20, y - 30, 40, 6);
-
-  ctx.fillStyle = "#4cff4c";
-  ctx.fillRect(x - 20, y - 30, 40 * (e.hp / e.maxHp), 6);
-  
-  // --- Visual Effects ---
-  if (isShielded) {
-    ctx.strokeStyle = "#4dff4d";
+    ctx.save();
+    ctx.translate(entity.x, entity.y);
+    
+    if (!entity.facingRight) ctx.scale(-1, 1);
+    
+    // Team Indicator
+    ctx.save();
+    ctx.translate(0, CONFIG.character.height/2); 
+    ctx.scale(1, 0.3); 
+    ctx.strokeStyle = tintColor;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(x, y, 22, 0, Math.PI * 2);
+    ctx.arc(0, 0, 20, 0, Math.PI*2);
     ctx.stroke();
-  }
-}
-
-// Helper function for drawing rounded rectangles (since canvas roundRect isn't standard in all environments)
-function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.arcTo(x + width, y, x + width, y + radius, radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
-    ctx.lineTo(x + radius, y + height);
-    ctx.arcTo(x, y + height, x, y + height - radius, radius);
-    ctx.lineTo(x, y + radius);
-    ctx.arcTo(x, y, x + radius, y, radius);
-    ctx.closePath();
-}
-
-
-// Draws obstacles with unique world styling
-function drawObstacle(ctx: CanvasRenderingContext2D, o: any, playerWorld: World, desyncLevel: number, shakeX: number, shakeY: number) {
-    const x = o.x + shakeX;
-    const y = o.y + shakeY;
-    
-    // Desync glitch color
-    const desyncFactor = desyncLevel / 100;
-    const glowIntensity = 20 * desyncFactor;
-    
-    ctx.shadowBlur = 0; // Reset shadow before drawing obstacle base
-    
-    if (playerWorld === 'light') {
-        // Space/Metal Obstacles
-        ctx.fillStyle = "#9999aa";
-        ctx.fillRect(x, y, o.w, o.h);
-        
-        // Add metallic highlights
-        const highlight = ctx.createLinearGradient(x, y, x + o.w, y + o.h);
-        highlight.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-        highlight.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
-        ctx.fillStyle = highlight;
-        ctx.fillRect(x, y, o.w, o.h);
-
-    } else {
-        // Cavern/Crystal Obstacles
-        ctx.fillStyle = "#440066"; // Dark base
-        
-        // Add purple glow/shadow
-        ctx.shadowColor = `rgba(255, 0, 255, ${0.5 + desyncFactor * 0.5})`;
-        ctx.shadowBlur = 10 + glowIntensity;
-        ctx.fillRect(x, y, o.w, o.h);
-        
-        // Crystal structure detail (Glowy lines)
-        ctx.fillStyle = "#ff00ff";
-        ctx.globalAlpha = 0.3;
-        ctx.fillRect(x + 2, y + 2, o.w - 4, 2);
-        ctx.fillRect(x + 2, y + o.h - 4, o.w - 4, 2);
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0; // Reset shadow
-    }
-}
-
-// Draws a bullet (with blur/glow)
-function drawBullet(ctx: CanvasRenderingContext2D, b: any, shakeX: number, shakeY: number) {
-    ctx.beginPath();
-    const color = b.world === "light" ? "#fff6d1" : "#b9a7ff";
-    ctx.fillStyle = color;
-    
-    // Set a subtle glow for the bullet
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 5;
-    
-    ctx.save();
-    ctx.translate(b.x + shakeX, b.y + shakeY);
-    ctx.rotate(Math.atan2(b.vy, b.vx)); 
-    ctx.fillRect(-5, -2, 10, 4); 
     ctx.restore();
     
-    ctx.shadowBlur = 0; // Reset shadow
+    // Draw Character
+    const w = CONFIG.character.width * CONFIG.character.scale;
+    const h = CONFIG.character.height * CONFIG.character.scale;
+    
+    if (entity.isAttacking) ctx.rotate(entity.facingRight ? 0.2 : -0.2);
+
+    ctx.drawImage(img, -w/2, -h/2, w, h);
+    
+    ctx.restore();
+
+    // HP Bar
+    ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(entity.x - 20, entity.y - 50, 40, 5);
+    ctx.fillStyle = "#00ff00"; ctx.fillRect(entity.x - 20, entity.y - 50, 40 * (entity.hp / 100), 5);
 }
 
-// PowerUp Render Helper (with pulse)
-function drawPowerUp(ctx: CanvasRenderingContext2D, p: PowerUp, shakeX: number, shakeY: number) {
-    ctx.globalAlpha = 0.8;
-    ctx.beginPath();
-    const x = p.x + shakeX;
-    const y = p.y + shakeY;
-    
-    let color: string;
-    switch(p.type) {
-        case "speed": color = "yellow"; break;
-        case "heal": color = "lime"; break;
-        case "shield": color = "cyan"; break;
-        case "damage": color = "red"; break;
-        case "invisibility": color = "purple"; break;
-        case "slow_trap": color = "gray"; break;
+function drawBackground(ctx: CanvasRenderingContext2D, world: World, w: number, h: number, desync: number) {
+    const img = world === "light" ? sprites.bgLight : sprites.bgShadow;
+
+    // If Image Loaded, use it
+    if (img.complete && img.naturalWidth > 0) {
+        ctx.drawImage(img, 0, 0, w, h);
+    } else {
+        // Fallback Gradient
+        const grd = ctx.createRadialGradient(w/2, h/2, 100, w/2, h/2, w);
+        if (world === "light") {
+            grd.addColorStop(0, "#001a33"); grd.addColorStop(1, "#000000");
+        } else {
+            grd.addColorStop(0, "#1a0033"); grd.addColorStop(1, "#000000");
+        }
+        ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
     }
-    
-    const pulse = Math.sin(Date.now() / 300) * 2 + 10;
-    ctx.fillStyle = color;
-    ctx.arc(x, y, pulse, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
+
+    if (desync > 50) { 
+        ctx.fillStyle = `rgba(255, 0, 255, ${ (desync-50)/500 })`; 
+        ctx.fillRect(0, 0, w, h); 
+    }
 }
 
-// HUD Helper (with text shadow)
-function drawHUD(ctx: CanvasRenderingContext2D, player: any, canvas: HTMLCanvasElement, desyncLevel: number) {
-    const now = Date.now();
-    const isLight = player.world === "light";
-    const x = canvas.width - 200;
+function drawSciFiObstacle(ctx: CanvasRenderingContext2D, o: any, world: World) {
+    const color = world === "light" ? CONFIG.colors.light.secondary : CONFIG.colors.shadow.secondary;
+    const stroke = world === "light" ? CONFIG.colors.light.primary : CONFIG.colors.shadow.primary;
+    ctx.fillStyle = color; ctx.strokeStyle = stroke; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(o.x, o.y, o.w, o.h, 5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = stroke; ctx.globalAlpha = 0.2; ctx.fillRect(o.x + 5, o.y + 5, o.w - 10, o.h - 10); ctx.globalAlpha = 1;
+}
 
-    // Apply shadow for clean HUD text
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 3;
+function drawSciFiPowerup(ctx: CanvasRenderingContext2D, p: any) {
+    const colors: Record<string, string> = { "speed": "#ffaa00", "heal": "#00ff00", "shield": "#00ffff", "damage": "#ff0000", "invisibility": "#aa00ff", "slow_trap": "#555" };
+    const c = colors[p.type] || "#fff";
+    ctx.save(); ctx.translate(p.x, p.y); const bob = Math.sin(Date.now() / 200) * 3;
+    ctx.shadowBlur = 10; ctx.shadowColor = c; ctx.strokeStyle = c; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0 + bob, 12, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = c; ctx.font = "14px Rajdhani"; ctx.textAlign = "center"; ctx.fillText(p.type[0].toUpperCase(), 0, 5 + bob); ctx.restore();
+}
 
-    ctx.font = "20px Inter";
-    ctx.fillStyle = isLight ? "#fff6d1" : "#b9a7ff";
-    ctx.fillText(`World: ${player.world.toUpperCase()}`, x, 30);
+function drawLightingSystem(ctx: CanvasRenderingContext2D, player: any, w: number, h: number) {
+    // 1. Determine how dark the world should be
+    // Shadow world is very dark (0.95), Light world is slightly dim (0.2)
+    const maxDarkness = player.world === "shadow" ? 0.95 : 0.2;
+    
+    // 2. Create a "Flashlight" Gradient
+    // It starts at the player coordinates
+    // Inner Radius (80px): Transparent (Clear view of character)
+    // Outer Radius (600px): Pitch Black (Hidden)
+    const grd = ctx.createRadialGradient(
+        player.x, player.y, 80,   // Start clear circle
+        player.x, player.y, 600   // End dark circle
+    );
+    
+    // 3. Define the colors
+    grd.addColorStop(0, "rgba(0,0,0,0)");           // Center: 100% Transparent
+    grd.addColorStop(0.1, `rgba(0,0,0,${maxDarkness * 0.1})`); // Soft edge
+    grd.addColorStop(1, `rgba(0,0,0,${maxDarkness})`);         // Outside: Dark
 
-    ctx.font = "14px Inter";
-    ctx.fillStyle = "#fff";
+    // 4. Draw the gradient over the whole screen
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, w, h);
     
-    // Shift Cooldown
-    const shiftCD = player.dashCooldown - (now - player.lastShift);
-    const shiftText = shiftCD > 0 ? `Shift CD: ${(shiftCD / 1000).toFixed(1)}s` : "SHIFT READY";
-    ctx.fillText(shiftText, x, 60);
+    // 5. Draw extra "black bars" for areas outside the gradient range
+    // This ensures corners are dark if the screen is large
+    ctx.fillStyle = `rgba(0,0,0,${maxDarkness})`;
+    
+    // Only fill the area *outside* our large 600px radius to save performance
+    // (Optional, but keeps the "Deep Darkness" feel in large windows)
+}
 
-    let y = 80;
-    
-    if (now < player.shieldUntil) { y += 20; ctx.fillStyle = "cyan"; ctx.fillText(`Shield: ${((player.shieldUntil - now) / 1000).toFixed(1)}s`, x, y); }
-    if (now < player.speedBoostUntil) { y += 20; ctx.fillStyle = "yellow"; ctx.fillText(`Speed: ${((player.speedBoostUntil - now) / 1000).toFixed(1)}s`, x, y); }
-    if (now < player.damageBoostUntil) { y += 20; ctx.fillStyle = "red"; ctx.fillText(`Dmg Boost: ${((player.damageBoostUntil - now) / 1000).toFixed(1)}s`, x, y); }
-    if (now < player.invisibleUntil) { y += 20; ctx.fillStyle = "purple"; ctx.fillText(`Invisible: ${((player.invisibleUntil - now) / 1000).toFixed(1)}s`, x, y); }
-    if (now < player.isSlowedUntil) { y += 20; ctx.fillStyle = "gray"; ctx.fillText(`SLOWED: ${((player.isSlowedUntil - now) / 1000).toFixed(1)}s`, x, y); }
-    
-    // Desync Status
-    y += 30;
-    ctx.fillStyle = desyncLevel > 70 ? "red" : desyncLevel > 30 ? "orange" : "lime";
-    ctx.fillText(`Desync Level: ${desyncLevel.toFixed(0)}%`, x, y);
-    
-    // Match Stats
-    y += 20;
-    ctx.fillStyle = "#fff";
-    const matchTime = ((now - GameStats.matchStartTime) / 1000).toFixed(1);
-    ctx.fillText(`Time: ${matchTime}s`, x, y + 10);
-    y += 20;
-    ctx.fillText(`P Shifts: ${GameStats.playerWorldShifts} | B Shifts: ${GameStats.botWorldShifts}`, x, y + 10);
-    y += 20;
-    ctx.fillText(`P Hits: ${GameStats.playerHitsLanded} | B Deaths: ${GameStats.botDeaths}`, x, y + 10);
-    
-    ctx.shadowBlur = 0; // Reset shadow for the rest of the canvas
+function drawSciFiHUD(ctx: CanvasRenderingContext2D, player: any, desync: number, w: number, h: number) {
+    ctx.font = "20px Rajdhani"; ctx.fillStyle = CONFIG.colors.light.text;
+    const hpPct = Math.max(0, player.hp / 100);
+    ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.beginPath(); ctx.roundRect(20, 20, 200, 20, 5); ctx.fill();
+    ctx.fillStyle = hpPct > 0.5 ? "#00ff00" : "#ff0000"; ctx.beginPath(); ctx.roundRect(20, 20, 200 * hpPct, 20, 5); ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(20, 20, 200, 20, 5); ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.fillText("HP", 25, 37);
+
+    const desyncPct = desync / 100;
+    ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.beginPath(); ctx.roundRect(w - 220, 20, 200, 20, 5); ctx.fill();
+    ctx.fillStyle = `rgb(${255 * desyncPct}, ${255 * (1-desyncPct)}, 0)`; ctx.beginPath(); ctx.roundRect(w - 220, 20, 200 * desyncPct, 20, 5); ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.roundRect(w - 220, 20, 200, 20, 5); ctx.stroke();
+    ctx.textAlign = "right"; ctx.fillStyle = "#fff"; ctx.fillText("DESYNC", w - 25, 37);
+    ctx.textAlign = "left";
 }
 
 window.GameClient = { startGame };
