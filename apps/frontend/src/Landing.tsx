@@ -19,9 +19,9 @@ export default function Landing() {
       <header className="fixed top-0 w-full z-50 bg-black/90 backdrop-blur border-b border-amber-500/20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="text-2xl text-amber-400 font-black italic tracking-tighter leading-none">
-            PARALLEL
+            OUTLAND
             <br />
-            WORLDS
+            EFFECT <span className="text-white">&</span> CAUSE
           </div>
 
           {/* Desktop Nav */}
@@ -98,7 +98,7 @@ export default function Landing() {
                 <span className="text-red-600">VERTICAL</span> <span className="text-white">EXTRACTION SHOOTER</span>
               </h2>
               
-              <p className="text-gray-400 mb-10 text-lg md:text-xl leading-relaxed max-w-lg font-medium">
+              <p className="text-gray-400 mb-10 text-3xl md:text-xl leading-relaxed max-w-lg font-medium">
                 The multiverse is collapsing. You are the anomaly. 
                 Parallel Worlds Arena is a high-octane combat experience where physics obey no master and every match is a glitch in the system.
               </p>
@@ -135,7 +135,7 @@ export default function Landing() {
         <img
           src={gun}
           alt="weapon"
-          className="absolute right-[-290px] top-1/2 -translate-y-1/2 max-w-none w-[1350px] pointer-events-none z-0"
+          className="absolute right-[-230px] top-1/2 -translate-y-1/2 max-w-none w-[1350px] pointer-events-none z-0"
         />
 
         <div className="relative z-10 max-w-7xl mx-auto">
