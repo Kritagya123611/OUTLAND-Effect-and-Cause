@@ -1,385 +1,326 @@
-"use client";
-import { useNavigate } from "react-router-dom";
-import evolutionImage from "./assets/EvolutionOfMoney.png";
-import CodeImage from "./assets/CodeImage.png";
-import FlyingStablecoin from "./assets/FlyingStablecoin.png";
-import ShieldImg from "./assets/ShieldImg.png";
-import { ChevronRight, Route, Shield } from "lucide-react";
+"use client"
+import { Navigate,useNavigate } from "react-router-dom"
+import { Menu, X, Twitter, Instagram, Twitch, Youtube, Globe, Zap } from "lucide-react"
+import { useState } from "react"
+
+// Keep these imports, but remember to swap the actual image files in your assets folder later
+import gun from "./assets/gun.png"
+import logo from "./assets/logo.png"
+import side1 from "./assets/side1.png"
+import side2 from "./assets/side2.png"
+import skull from "./assets/skull.png"
 
 export default function Landing() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
-
-      {/* NAVIGATION */}
-      <nav className="fixed top-0 w-full border-b border-gray-900 bg-black/95 backdrop-blur z-50">
-        <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-white" />
-            <span className="font-bold text-2xl tracking-wider">OutLand</span>
+    <div className="bg-black text-white min-h-screen font-sans selection:bg-amber-500 selection:text-black">
+      {/* Header/Navigation */}
+      <header className="fixed top-0 w-full z-50 bg-black/90 backdrop-blur border-b border-amber-500/20">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="text-2xl text-amber-400 font-black italic tracking-tighter leading-none">
+            PARALLEL
+            <br />
+            WORLDS
           </div>
 
-          {/* Menu */}
-          <div className="hidden md:flex gap-8 items-center text-lg tracking-widest text-gray-400">
-            <button className="hover:text-white transition">PARALLEL WORLDS</button>
-            <button className="hover:text-white transition">GAME MECHANICS</button>
-            <button className="hover:text-white transition">ON-CHAIN PROGRESSION</button>
-          </div>
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-8">
+            <a href="#arena" className="text-lg font-bold italic hover:text-amber-400 transition tracking-wide">
+              THE ARENA
+            </a>
+            <a href="#features" className="text-lg font-bold italic hover:text-amber-400 transition tracking-wide">
+              MECHANICS
+            </a>
+            <a href="#roadmap" className="text-lg font-bold italic hover:text-amber-400 transition tracking-wide">
+              ROADMAP
+            </a>
+            <a href="#hackathon" className="text-lg font-bold italic hover:text-amber-400 transition tracking-wide">
+              ORIGINS
+            </a>
+          </nav>
 
-          {/* CTA */}
-          <button className="bg-lime-400 text-black px-6 py-2 font-bold text-xs hover:bg-lime-300 transition" onClick={() => navigate("/signup")}>
-            LAUNCH GAME
-          </button>
-        </div>
-      </nav>
-
-      {/* HERO SECTION */}
-      <section className="min-h-screen pt-24 pb-12 relative overflow-hidden border-b border-gray-900">
-        <div className="max-w-7xl mx-auto px-8 grid md:grid-cols-2 gap-12 items-center h-full py-24">
-
-          {/* Left */}
-          <div className="space-y-8">
-            <h1 className="text-7xl md:text-6xl font-bold leading-tight tracking-tight">
-              A PvP Arena Where Two Worlds Collide
-            </h1>
-
-            <p className="text-sm text-gray-300 max-w-md font-mono leading-relaxed tracking-wide">
-              OUTLAND IS A FAST-PACED PARALLEL-WORLD ARENA FIGHTER. SHIFT BETWEEN TWO DIMENSIONS,
-              OUTPLAY YOUR ENEMIES, COLLECT SHARD NFTs, AND PROGRESS ON-CHAIN.
-            </p>
-
-            <button className="bg-lime-400 text-black px-8 py-3 font-bold text-sm hover:bg-lime-300 transition w-full max-w-xs flex items-center justify-between group" onClick={() => navigate("/signup")}>
-              <span>PLAY DEMO</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+          {/* Login Button */}
+          <div className="flex items-center gap-4">
+            <button className="hidden md:block px-8 py-3 border-2 border-amber-400 text-amber-400 font-black text-lg hover:bg-amber-400 hover:text-black transition skew-x-[-12deg] hover:shadow-[0_0_20px_rgba(251,191,36,0.4)]"
+              onClick={() => navigate('/signup')}>
+              ENTER THE RIFT
+            </button>
+            <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
-
-          {/* Right - Artwork */}
-          <div className="relative h-96 md:h-full flex items-center justify-center">
-            <div className="relative w-full h-full">
-              <img
-                src={evolutionImage}
-                alt="Parallel Worlds Visual"
-                className="object-cover object-center w-full h-full"
-              />
-
-              {/* Floating Labels */}
-              <div className="absolute inset-0 pointer-events-none">
-                <FloatingLabel pos="top-12 right-8" tag="// OUTLAND" text="DUAL WORLDS" />
-                <FloatingLabel pos="top-1/3 left-8" tag="// SHIFT" text="MECHANICS" />
-                <FloatingLabel pos="top-2/3 right-12" tag="// LIGHT" text="SHADOW" />
-                <FloatingLabel pos="bottom-20 left-12" tag="// SKILL" text="STRATEGY" />
-              </div>
-
-              <p className="absolute bottom-0 right-0 text-xs tracking-widest text-gray-500">
-                PARALLEL WORLDS ENGINE
-              </p>
-            </div>
-          </div>
         </div>
 
-        {/* Partner Logos */}
-        <PartnerSection
-          partners={[
-            "Solana Gaming",
-            "Phaser Engine",
-            "WebSocket Arena",
-            "ShadowForge Studios",
-            "LightRealm Labs",
-          ]}
-        />
-      </section>
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <nav className="md:hidden bg-black border-t border-amber-500/20 p-6 space-y-6">
+            <a href="#arena" className="block text-xl font-bold italic hover:text-amber-400">
+              THE ARENA
+            </a>
+            <a href="#features" className="block text-xl font-bold italic hover:text-amber-400">
+              MECHANICS
+            </a>
+            <a href="#roadmap" className="block text-xl font-bold italic hover:text-amber-400">
+              ROADMAP
+            </a>
+            <a href="#hackathon" className="block text-xl font-bold italic hover:text-amber-400">
+              ORIGINS
+            </a>
+            <button className="w-full px-4 py-4 border-2 border-amber-400 text-amber-400 font-black hover:bg-amber-400 hover:text-black transition uppercase"
+              onClick={() => navigate('/signup')}>
+              Enter The Rift
+            </button>
+          </nav>
+        )}
+      </header>
 
-      {/* DUAL-WORLD COMBAT */}
-      <section className="py-24 border-b border-gray-900">
-        <div className="max-w-7xl mx-auto px-8">
-          <SectionHeader tag="// GAME MECHANICS" title="Master the Art of Dual-World Combat." />
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden min-h-screen flex items-center">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-amber-900/20 via-black to-black opacity-60"></div>
+        
+        {/* Grid overlay effect */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#222_1px,transparent_1px),linear-gradient(to_bottom,#222_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none"></div>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-
-            {/* Left */}
+        <div className="max-w-7xl mx-auto relative z-10 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-sm text-gray-300 mb-12 font-mono leading-relaxed tracking-wide">
-                OUTLAND’S SIGNATURE MECHANIC LETS YOU SHIFT BETWEEN TWO PARALLEL REALMS —
-                THE ANCIENT WORLD AND THE FUTURE WORLD. EACH WORLD OFFERS UNIQUE POWER-UPS,
-                MOVEMENT RULES, AND COMBAT ADVANTAGES. MASTER THE SHIFT AND CONTROL THE ARENA.
+              <h1 className="text-6xl md:text-8xl font-black italic leading-[0.85] mb-2 tracking-tighter">
+                WHERE
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">REALITY</span>
+                <br />
+                FRACTURES
+              </h1>
+
+              {/* UPDATED H2 SECTION */}
+              <h2 className="text-2xl md:text-3xl font-black italic tracking-wide uppercase mb-6">
+                <span className="text-red-600">VERTICAL</span> <span className="text-white">EXTRACTION SHOOTER</span>
+              </h2>
+              
+              <p className="text-gray-400 mb-10 text-lg md:text-xl leading-relaxed max-w-lg font-medium">
+                The multiverse is collapsing. You are the anomaly. 
+                Parallel Worlds Arena is a high-octane combat experience where physics obey no master and every match is a glitch in the system.
               </p>
-
-              <FeatureList
-                items={[
-                  {
-                    num: "01",
-                    tag: "CORE MECHANIC",
-                    title: "Two Worlds. One Fight.",
-                    desc: "Exist in both dimensions, but appear in only one at a time. Enemies in the opposite world cannot hit or see you.",
-                  },
-                  {
-                    num: "02",
-                    tag: "COMBAT",
-                    title: "Shift to Outplay",
-                    desc: "Use instant realm-shifts to dodge, flank, escape, and ambush. Timing becomes the ultimate mind game.",
-                  },
-                  {
-                    num: "03",
-                    tag: "STRATEGY",
-                    title: "World-Based Perks",
-                    desc: "Ancient World = agility. Future World = damage. Switch at the right moment to maximize your advantage.",
-                  },
-                ]}
-              />
-            </div>
-
-            {/* Right */}
-            <img
-              src={FlyingStablecoin}
-              alt="Dual World Preview"
-              className="object-cover object-center w-full h-full"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* SAFETY SYSTEM */}
-      <section className="py-24 border-b border-gray-900">
-        <div className="max-w-7xl mx-auto px-8">
-
-          <SectionHeader
-            centered
-            tag="// WORLD SAFETY SYSTEM"
-            title="Shift-Protected Combat. Always Active."
-            subtitle="EVERY PLAYER ACTION IN OUTLAND IS TRACKED AND SYNCHRONIZED. NO DESYNC. NO INVISIBLE CHEESE. NO BROKEN HITBOXES."
-          />
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                tag: "FOR NEW PLAYERS",
-                title: "Guaranteed Fair Fights",
-                desc: "Server-side world shift & hit detection prevents lag abuse and ghost states.",
-              },
-              {
-                tag: "FOR COMPETITORS",
-                title: "Anti-Desync Architecture",
-                desc: "Parallel worlds stay synced through authoritative WebSocket logic.",
-              },
-              {
-                tag: "FOR ESPORTS / RANKED",
-                title: "On-Chain Combat Logs",
-                desc: "Every match generates a verifiable battle record — ideal for rankings and tournaments.",
-              },
-            ].map((card, i) => (
-              <div key={i} className="border border-gray-800 p-8 hover:border-gray-700 transition">
-                <div className="flex items-center gap-3 mb-6">
-                  <Shield className="w-4 h-4 text-lime-400" />
-                  <span className="text-xs font-mono tracking-widest text-gray-500">{card.tag}</span>
-                </div>
-
-                <h3 className="text-xl font-bold mb-4">{card.title}</h3>
-                <p className="text-sm text-gray-400 font-mono leading-relaxed mb-6">{card.desc}</p>
-
-                <button className="text-xs font-mono w-full border border-gray-700 px-4 py-2 hover:border-gray-500 transition">
-                  LEARN MORE →
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button className="px-10 py-4 bg-amber-400 text-black font-black text-xl hover:bg-white transition skew-x-[-12deg] uppercase tracking-wider" onClick={() => navigate('/signup')}  >
+                  Play The Alpha
+                </button>
+                <button className="px-10 py-4 border-2 border-white text-white font-black text-xl hover:bg-white hover:text-black transition skew-x-[-12deg] uppercase tracking-wider">
+                  Watch Trailer
                 </button>
               </div>
-            ))}
+            </div>
+            
+            {/* Hero Image Container */}
+            <div className="flex justify-center relative">
+              <div className="absolute inset-0 bg-amber-500/20 blur-[100px] rounded-full mix-blend-screen"></div>
+              <div className="w-full max-w-[500px] aspect-[4/5] relative z-10 flex items-center justify-center">
+                {/* Replace 'skull' with your main character or game logo */}
+                <img
+                  src={skull}
+                  alt="Game Asset"
+                  className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(251,191,36,0.3)]"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CHARACTERS & WORLDS */}
-      <section className="py-24 border-b border-gray-900">
-        <div className="max-w-7xl mx-auto px-8">
-          <SectionHeader
-            tag="// CHARACTERS & WORLDS"
-            title="Two Worlds. Two Archetypes. One Arena."
-          />
+      {/* Call to Action / Hype Section */}
+      <section className="relative py-32 px-6 bg-black overflow-hidden border-y border-white/10">
+        {/* Background gun image - Replace with a weapon from your game */}
+        <img
+          src={gun}
+          alt="weapon"
+          className="absolute right-[-290px] top-1/2 -translate-y-1/2 max-w-none w-[1350px] pointer-events-none z-0"
+        />
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <h2 className="text-5xl md:text-7xl font-black italic mb-8 leading-[0.9]">
+            BUILT FOR THE <br /> 
+            <span className="text-stroke-amber text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">CHAOS</span>
+          </h2>
 
-            {/* Left */}
-            <div>
-              <p className="text-sm text-gray-300 mb-8 font-mono leading-relaxed tracking-wide">
-                Choose between Ancient World warriors and Futuristic World robots — each with unique stats, animations, and perks.
+          <p className="text-gray-400 text-2xl md:text-3xl leading-tight mb-12 max-w-2xl font-bold">
+            "We didn't just build a game. We built a collider."
+            <br/>
+            <span className="text-amber-500 text-xl font-normal mt-4 block">— Lead Developer, Indie.fun Hackathon</span>
+          </p>
+
+          <button className="group flex items-center gap-3 px-12 py-5 border-2 border-amber-400 text-amber-400 font-black text-xl hover:bg-amber-400 hover:text-black transition skew-x-[-12deg]">
+            <span>JOIN THE DISCORD</span>
+            <Zap className="group-hover:fill-black" />
+          </button>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-32 px-6 bg-gradient-to-b from-black to-zinc-900" id="features">
+        <div className="max-w-7xl mx-auto space-y-40">
+          
+          {/* --- FEATURE 1 --- */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-20">
+            <div className="relative">
+              <div className="absolute -left-10 top-0 text-9xl font-black text-white/5 select-none italic">-01</div>
+              <h2 className="text-4xl md:text-6xl font-black italic mb-6 leading-none">
+                DIMENSIONAL <br/> WARFARE
+              </h2>
+              <p className="text-gray-400 text-2xl leading-relaxed border-l-4 border-amber-500 pl-6">
+                Maps aren't static. In Parallel Worlds, the terrain shifts in real-time. Gravity inverts, cover dissolves, and entire chunks of the arena phase out of existence. Adapt or be deleted.
               </p>
+            </div>
 
-              {/* CODE SNIPPET */}
-              <CodeBlock />
+            <div className="flex justify-center lg:justify-end relative group">
+              <div className="absolute inset-[-30px] bg-amber-500/15 skew-x-[-12deg] transform group-hover:skew-x-[-6deg] transition duration-500"></div>
 
-              <FeatureList
-                items={[
-                  {
-                    num: "01",
-                    tag: "FOR PLAYERS",
-                    title: "Master Your Abilities",
-                    desc: "Unlock class-based skills across eras — swords, beams, teleports, traps, and more.",
-                  },
-                  {
-                    num: "02",
-                    tag: "FOR GAME WORLD",
-                    title: "Shift Between Eras",
-                    desc: "Travel through time to change terrain, enemies, and available powers.",
-                  },
-                ]}
+              <img
+                src={side1}
+                alt="Gameplay Screenshot 1"
+                className="w-[550px] relative z-10 "
+              />
+            </div>
+          </div>
+
+          {/* --- FEATURE 2 --- */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-20">
+            {/* Image Left on Desktop */}
+            <div className="flex justify-center lg:justify-start relative order-2 lg:order-1 group">
+               <div className="absolute inset-[-30px] bg-amber-500/15 skew-x-[-12deg] transform group-hover:skew-x-[-6deg] transition duration-500"></div>
+              <img
+                src={side2}
+                alt="Gameplay Screenshot 2"
+                className="w-[550px] relative z-10 "
               />
             </div>
 
-            {/* Right */}
-            <img
-              src={CodeImage}
-              alt="Game Code Visual"
-              className="w-[500px] h-auto mx-auto"
-            />
+            <div className="order-1 lg:order-2 relative">
+              <div className="absolute -right-10 top-0 text-9xl font-black text-white/5 select-none italic">-02</div>
+              <h2 className="text-4xl md:text-6xl font-black italic mb-6 leading-none">
+                BREAK THE <br/> META
+              </h2>
+              <p className="text-gray-400 text-2xl leading-relaxed border-l-4 border-white pl-6">
+                No classes. No presets. Build your loadout from scavenged tech across differing realities. Combine cyberpunk ballistics with arcane artifacts. If it kills, it works.
+              </p>
+              <button className="mt-8 px-8 py-3 bg-white text-black font-bold hover:bg-amber-400 transition skew-x-[-12deg] w-fit uppercase">
+                View Armory
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA SECTION */}
-      <section className="py-24 border-b border-gray-900">
-        <div className="max-w-7xl mx-auto px-8 grid md:grid-cols-2 gap-12 items-center">
+      {/* Dev/Hackathon Section */}
+      <section className="py-24 px-6 bg-black border-t border-amber-500/20" id="hackathon">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <div className="inline-block px-4 py-1 bg-amber-500/20 text-amber-500 font-bold mb-4 text-lg tracking-widest uppercase">
+                Development Log
+              </div>
+              <h2 className="text-5xl md:text-6xl font-black italic mb-8">FORGED IN THE <br/> INDIE FIRE</h2>
+              <p className="text-gray-400 text-2xl leading-relaxed mb-8">
+                Parallel Worlds Arena isn't corporate churn. It's a passion project born from the <span className="text-white font-bold">Indie.fun Hackathon</span>. We are building this in public, fueled by caffeine and code, with zero compromises.
+              </p>
+              <div className="grid grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-4xl font-black text-amber-500 italic">100%</h3>
+                  <p className="text-lg text-gray-500 uppercase tracking-wider font-bold">Community Driven</p>
+                </div>
+                <div>
+                  <h3 className="text-4xl font-black text-amber-500 italic">24/7</h3>
+                  <p className="text-lg text-gray-500 uppercase tracking-wider font-bold">Development Cycle</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="relative w-full max-w-md aspect-square border border-amber-500/30 bg-amber-500/5 flex items-center justify-center p-12">
+                {/* Logo Placeholder */}
+                <img
+                  src={logo}
+                  alt="Studio Logo"
+                  className="w-[140%] h-[140%] object-contain scale-110"
+                  style={{ transform: "scale(1.25)" }}
+                />
 
-          {/* Left */}
-          <div className="space-y-8">
-            <h2 className="text-6xl font-bold leading-tight">Static gameplay is obsolete</h2>
-            <p className="text-sm text-gray-300 font-mono tracking-wide leading-relaxed max-w-md">
-              OUTLAND EVOLVES AS YOU PLAY — NEW ABILITIES, SHIFTING WORLDS, AND DYNAMIC COMBAT THAT NEVER STAYS THE SAME.
-            </p>
+                {/* Decorative corners */}
+                <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-amber-500"></div>
+                <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-amber-500"></div>
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-amber-500"></div>
+                <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-amber-500"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="flex gap-4">
-              <PrimaryButton text="PLAY NOW" />
-              <OutlineButton text="GAME LORE" />
+      {/* Newsletter / Updates */}
+      <section className="py-20 px-6 bg-amber-500 text-black">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl md:text-6xl font-black italic mb-6">DON'T GET LEFT IN THE VOID</h2>
+          <p className="text-xl md:text-2xl font-bold mb-8 opacity-80">Sign up for access to early builds and exclusive dev logs.</p>
+          
+          <div className="flex flex-col md:flex-row gap-4 justify-center max-w-lg mx-auto">
+            <input 
+              type="email" 
+              placeholder="ENTER YOUR EMAIL" 
+              className="w-full px-6 py-4 bg-black text-white placeholder:text-gray-500 font-bold italic focus:outline-none focus:ring-2 focus:ring-white skew-x-[-12deg]"
+            />
+            <button className="px-8 py-4 bg-white text-black font-black text-xl hover:bg-black hover:text-white transition skew-x-[-12deg]">
+              SUBSCRIBE
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-black pt-20 pb-10 px-6 border-t border-zinc-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+            <div className="col-span-1 md:col-span-2">
+              <div className="text-3xl text-white font-black italic mb-6 tracking-tighter">
+                PARALLEL
+                <br />
+                WORLDS
+              </div>
+              <p className="text-gray-500 max-w-sm text-lg">
+                A competitive vertical extraction shooter built for the Indie.fun Hackathon. Survive the glitch.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-black text-white text-lg mb-6 italic">NAVIGATION</h4>
+              <ul className="space-y-4 text-gray-400 font-medium">
+                <li><a href="#" className="hover:text-amber-400 transition">The Game</a></li>
+                <li><a href="#" className="hover:text-amber-400 transition">Devlog</a></li>
+                <li><a href="#" className="hover:text-amber-400 transition">Careers</a></li>
+                <li><a href="#" className="hover:text-amber-400 transition">Press Kit</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-black text-white text-lg mb-6 italic">CONNECT</h4>
+              <div className="flex gap-6">
+                <a href="#" className="text-gray-400 hover:text-amber-400 transition"><Twitter size={24} /></a>
+                <a href="#" className="text-gray-400 hover:text-amber-400 transition"><Instagram size={24} /></a>
+                <a href="#" className="text-gray-400 hover:text-amber-400 transition"><Twitch size={24} /></a>
+                <a href="#" className="text-gray-400 hover:text-amber-400 transition"><Youtube size={24} /></a>
+              </div>
             </div>
           </div>
 
-          {/* Right */}
-          <img
-            src={ShieldImg}
-            alt="Outland Realm"
-            className="object-cover object-center w-full h-full"
-          />
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-gray-900 py-12">
-        <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center">
-          <button className="text-lime-400 hover:text-lime-300 transition font-bold text-sm">
-            JOIN COMMUNITY
-          </button>
-          <p className="text-xs text-gray-600 mt-4 md:mt-0">© 2025 OutLand</p>
+          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-600 font-bold">
+            <p>© 2025 KRITAGYA JHA. All rights reserved.</p>
+            <div className="flex gap-8">
+              <a href="#" className="hover:text-white">PRIVACY</a>
+              <a href="#" className="hover:text-white">TERMS</a>
+              <a href="#" className="hover:text-white">COOKIES</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
-  );
-}
-
-/* ---------------------------------------------------------------- */
-/* COMPONENTS */
-/* ---------------------------------------------------------------- */
-
-function FloatingLabel({ pos, tag, text }) {
-  return (
-    <div className={`absolute ${pos} text-xs tracking-widest text-gray-400`}>
-      <span className="text-lime-400">{tag}</span>
-      <span className="mx-2">→</span>
-      <span>{text}</span>
-    </div>
-  );
-}
-
-function SectionHeader({ tag, title, subtitle, centered }) {
-  return (
-    <div className={`mb-20 space-y-4 ${centered ? "text-center" : ""}`}>
-      <p className="text-xs font-mono tracking-widest text-lime-400">{tag}</p>
-      <h2 className="text-5xl font-bold leading-tight">{title}</h2>
-      {subtitle && (
-        <p className="text-sm text-gray-400 max-w-2xl mx-auto font-mono tracking-wide">
-          {subtitle}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function PartnerSection({ partners }) {
-  return (
-    <div className="border-t border-gray-900 mt-12">
-      <div className="max-w-7xl mx-auto px-8 py-8 grid grid-cols-2 md:grid-cols-5 gap-8 items-center">
-        {partners.map((partner) => (
-          <div
-            key={partner}
-            className="text-xs text-gray-500 hover:text-gray-300 transition cursor-pointer"
-          >
-            {partner}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function FeatureList({ items }) {
-  return (
-    <div className="space-y-12">
-      {items.map((item) => (
-        <div key={item.num} className="border-l border-gray-800 pl-6">
-          <div className="flex items-center gap-4 mb-2">
-            <span className="text-2xl font-bold text-gray-600">{item.num}</span>
-            <div className="w-1 h-1 bg-gray-600 rounded-full" />
-            <span className="text-xs font-mono tracking-widest text-gray-500">{item.tag}</span>
-          </div>
-
-          <h3 className="text-lg font-bold mb-2">{item.title}</h3>
-          <p className="text-sm text-gray-400 font-mono leading-relaxed mb-3">{item.desc}</p>
-
-          <OutlineButton text="VIEW WORLDS →" small />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function PrimaryButton({ text }) {
-  return (
-    <button className="bg-lime-400 text-black px-8 py-3 font-bold text-sm hover:bg-lime-300 transition flex items-center gap-2">
-      {text} <ChevronRight className="w-4 h-4" />
-    </button>
-  );
-}
-
-function OutlineButton({ text, small }) {
-  return (
-    <button
-      className={`text-xs font-mono tracking-widest text-white border border-gray-700 px-4 py-2 hover:border-gray-500 transition ${
-        small ? "" : "flex items-center gap-2"
-      }`}
-    >
-      {text}
-    </button>
-  );
-}
-
-function CodeBlock() {
-  return (
-    <div className="bg-gray-900 border border-gray-800 p-6 mb-12 font-mono text-sm text-lime-400">
-      <div className="space-y-2">
-        <div>
-          <span className="text-gray-500">const</span> action ={" "}
-          <span className="text-white">await</span> player.
-          <span className="text-lime-400">triggerAbility</span>(
-        </div>
-        <div className="ml-4">
-          <span className="text-gray-500">player</span>.id,
-        </div>
-        <div className="ml-4">
-          <span className="text-orange-400">ABILITY_TYPE</span>,
-        </div>
-        <div className="ml-4">
-          <span className="text-orange-400">WORLD_STATE</span>
-        </div>
-        <div>);</div>
-      </div>
-    </div>
-  );
+  )
 }
