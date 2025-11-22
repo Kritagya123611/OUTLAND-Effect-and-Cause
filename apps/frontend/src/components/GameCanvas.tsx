@@ -34,6 +34,8 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import bg from '../assets/bg.png';
+import robot from '../assets/robot.png';
+
 
 // --- Constants for Game Balancing ---
 const GAME_CONFIG = {
@@ -163,7 +165,7 @@ const WEAPONS: Record<WeaponType, Weapon> = {
 };
 
 interface Enemy {
-    sprite: Phaser.GameObjects.Rectangle;
+    sprite: Phaser.GameObjects.Sprite;
     health: number;
     maxHealth: number;
     lastShot: number;
@@ -188,7 +190,7 @@ const Game = () => {
 
         class MainScene extends Phaser.Scene {
             // Core objects
-            private player!: Phaser.GameObjects.Rectangle;
+            private player!: Phaser.GameObjects.Sprite;
             private gun!: Phaser.GameObjects.Rectangle;
             private platforms!: Phaser.Physics.Arcade.StaticGroup;
             private bullets!: Phaser.Physics.Arcade.Group;
@@ -235,29 +237,7 @@ const Game = () => {
 
             preload() {
                 this.load.image('bg', bg);
-                
-                // ============================================
-                // ANIMATED SPRITE SETUP
-                // ============================================
-                // To use animated sprites, uncomment and configure the following:
-                // 
-                // 1. Load sprite sheet (replace with your actual sprite sheet path):
-                // this.load.spritesheet('player', 'path/to/player-spritesheet.png', {
-                //     frameWidth: 32,  // Width of each frame
-                //     frameHeight: 48, // Height of each frame
-                // });
-                // this.load.spritesheet('enemy', 'path/to/enemy-spritesheet.png', {
-                //     frameWidth: 32,
-                //     frameHeight: 48,
-                // });
-                //
-                // 2. Create animations in the create() method (see example below)
-                //
-                // Sprite sheet format: Horizontal strip of frames
-                // Example: [idle1][idle2][idle3][walk1][walk2][walk3]...
-                //
-                // For multiple rows, use atlas instead:
-                // this.load.atlas('player', 'path/to/player-atlas.png', 'path/to/player-atlas.json');
+                this.load.image('robot', robot);
                 
                 // Create textures for different bullet types
                 const graphics = this.make.graphics({ x: 0, y: 0 });
@@ -491,30 +471,12 @@ const Game = () => {
             }
 
             private createPlayer() {
-                // Check if sprite sheet is loaded, otherwise use rectangle
-                const useSprite = this.textures.exists('player');
-                
-                if (useSprite) {
-                    // Create animated sprite
-                    this.player = this.add.sprite(200, 400, 'player');
-                    this.physics.add.existing(this.player);
-                    const body = this.player.body as Phaser.Physics.Arcade.Body;
-                    body.setSize(24, 40); // Set collision box size
-                    body.setCollideWorldBounds(true);
-                    body.setDragX(600);
-                    
-                    // Play idle animation
-                    if (this.anims.exists('player-idle')) {
-                        this.player.play('player-idle');
-                    }
-                } else {
-                    // Fallback to colored rectangle
-                    this.player = this.add.rectangle(200, 400, 24, 40, 0x2ecc71);
-                    this.physics.add.existing(this.player);
-                    const body = this.player.body as Phaser.Physics.Arcade.Body;
-                    body.setCollideWorldBounds(true);
-                    body.setDragX(600);
-                }
+                this.player = this.add.sprite(200, 400, 'robot');
+                this.physics.add.existing(this.player);
+                const body = this.player.body as Phaser.Physics.Arcade.Body;
+                body.setSize(24, 40); // Set collision box size
+                body.setCollideWorldBounds(true);
+                body.setDragX(600);
                 
                 this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
             }
@@ -868,31 +830,12 @@ const Game = () => {
                 const x = Phaser.Math.Between(400, this.bgSprite.width - 400);
                 const y = Phaser.Math.Between(100, 400);
                 
-                // Check if sprite sheet is loaded, otherwise use rectangle
-                const useSprite = this.textures.exists('enemy');
-                let enemySprite: Phaser.GameObjects.GameObject;
-                
-                if (useSprite) {
-                    // Create animated sprite
-                    enemySprite = this.add.sprite(x, y, 'enemy');
-                    this.physics.add.existing(enemySprite);
-                    const body = enemySprite.body as Phaser.Physics.Arcade.Body;
-                    body.setSize(24, 40); // Set collision box size
-                    body.setCollideWorldBounds(true);
-                    body.setDragX(500);
-                    
-                    // Play idle animation
-                    if (this.anims.exists('enemy-idle')) {
-                        (enemySprite as Phaser.GameObjects.Sprite).play('enemy-idle');
-                    }
-                } else {
-                    // Fallback to colored rectangle
-                    enemySprite = this.add.rectangle(x, y, 24, 40, 0xe74c3c);
-                    this.physics.add.existing(enemySprite);
-                    const body = enemySprite.body as Phaser.Physics.Arcade.Body;
-                    body.setCollideWorldBounds(true);
-                    body.setDragX(500);
-                }
+                const enemySprite = this.add.sprite(x, y, 'robot');
+                this.physics.add.existing(enemySprite);
+                const body = enemySprite.body as Phaser.Physics.Arcade.Body;
+                body.setSize(24, 40); // Set collision box size
+                body.setCollideWorldBounds(true);
+                body.setDragX(500);
                 
                 this.enemies.add(enemySprite);
                 
@@ -903,7 +846,7 @@ const Game = () => {
                 ]) as WeaponType;
                 
                 const enemy: Enemy = {
-                    sprite: enemySprite as Phaser.GameObjects.Rectangle,
+                    sprite: enemySprite as Phaser.GameObjects.Sprite,
                     health: GAME_CONFIG.ENEMY_MAX_HEALTH,
                     maxHealth: GAME_CONFIG.ENEMY_MAX_HEALTH,
                     lastShot: 0,
