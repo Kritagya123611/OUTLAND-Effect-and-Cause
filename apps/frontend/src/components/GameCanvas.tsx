@@ -167,7 +167,7 @@ const Game = () => {
             private enemies!: Phaser.Physics.Arcade.Group;
             private grenades!: Phaser.Physics.Arcade.Group;
             private powerUps!: Phaser.Physics.Arcade.Group;
-            
+            private hasReceivedRocket: boolean = false;
             // State and Inputs
             private keys!: { 
                 W: Phaser.Input.Keyboard.Key; 
@@ -335,6 +335,22 @@ const Game = () => {
                 this.cleanupBullets();
                 this.cleanupRockets();
                 this.updateGrenades(time);
+
+                const { hasRocketLauncher, ammo: storeAmmo } = useGameStore.getState();
+
+                // Check if player bought the gun but hasn't received it in Phaser yet
+                if (hasRocketLauncher && !this.hasReceivedRocket) {
+                    this.hasReceivedRocket = true;
+                    
+                    // Force switch weapon to Rocket Launcher
+                    this.currentWeapon = { 
+                        ...WEAPONS[WeaponType.ROCKET_LAUNCHER], 
+                        ammo: storeAmmo // Sync ammo from the purchase (100)
+                    };
+                    
+                    // Play a sound/effect
+                    this.createPickupEffect(this.player.x, this.player.y);
+                }
                 
                 // Spawning
                 this.enemySpawnTimer += delta;

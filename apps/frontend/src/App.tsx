@@ -2,27 +2,33 @@ import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from "./components/GameCanvas";
 import GameHUD from "./components/GameHUD";
 import DarkGame from "./components/DarkGameCanvas";
+import WagerModal from "./components/WagerModal";
 
 export default function App() {
   const [currentWorld, setCurrentWorld] = useState<'light' | 'dark'>('light');
   const [progress, setProgress] = useState(0);
+  const [showWagerModal, setShowWagerModal] = useState(false);
   
-  // We use a Ref to track holding state instantly without triggering re-renders
+  // --- REFS (The "Live" State) ---
+  // We use this Ref to let the animation loop see the REAL world value
+  const currentWorldRef = useRef(currentWorld); 
   const isHoldingRef = useRef(false);
   const animationFrameRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
 
-  // 1. KEYBOARD LISTENERS
+  // 1. SYNC REF WITH STATE
+  // Whenever React state updates, update the Ref too.
+  useEffect(() => {
+    currentWorldRef.current = currentWorld;
+  }, [currentWorld]);
+
+  // 2. KEYBOARD LISTENERS
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !e.repeat) {
-        // Prevent Phaser from blocking this if it tries to
-        // e.stopPropagation(); 
-        
         if (!isHoldingRef.current) {
           isHoldingRef.current = true;
           startTimeRef.current = Date.now();
-          // Start the loop
           cancelAnimationFrame(animationFrameRef.current);
           animationFrameRef.current = requestAnimationFrame(updateProgress);
         }
@@ -45,31 +51,36 @@ export default function App() {
       window.removeEventListener('keyup', handleKeyUp);
       cancelAnimationFrame(animationFrameRef.current);
     };
-  }, []); // Empty dependency array = listeners bind ONLY ONCE
+  }, []); 
 
-  // 2. ANIMATION LOOP
+  // 3. ANIMATION LOOP
   const updateProgress = () => {
     if (!isHoldingRef.current) return;
 
     const elapsed = Date.now() - startTimeRef.current;
-    const newProgress = Math.min((elapsed / 2000) * 100, 100); // 2000ms = 2 seconds
+    const newProgress = Math.min((elapsed / 2000) * 100, 100); 
     
     setProgress(newProgress);
 
     if (newProgress >= 100) {
-      // TRIGGER SWITCH
-      isHoldingRef.current = false; // Force stop holding
+      isHoldingRef.current = false;
       setProgress(0);
-      switchWorld(); // Call the switch function
+      
+      // --- FIX IS HERE: Use the Ref, not the State variable ---
+      // The Ref always has the latest value even inside this closure
+      if (currentWorldRef.current === 'light') {
+          // Going to Dark -> Pay Money
+          setShowWagerModal(true);
+      } else {
+          // Going back to Light -> Free
+          switchWorld();
+      }
     } else {
-      // Keep looping
       animationFrameRef.current = requestAnimationFrame(updateProgress);
     }
   };
 
-  // 3. SWITCH LOGIC (Wrapped to access latest state)
   const switchWorld = () => {
-    console.log("SWITCHING REALITY...");
     setCurrentWorld(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
@@ -90,18 +101,18 @@ export default function App() {
         </div>
       )}
       
-      {/* HUD Layer (Always on top) */}
+      {/* HUD Layer */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         <GameHUD />
       </div>
 
-      {/* Teleport Progress Bar UI */}
+      {/* Teleport Progress UI */}
       {progress > 0 && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 pointer-events-none z-50">
           <div className="text-center mb-2 font-bold text-cyan-400 tracking-widest text-sm animate-pulse">
-            SYNCHRONIZING REALITY... {(progress).toFixed(0)}%
+            {/* FIX: Use State here for rendering text, that's fine */}
+            {currentWorld === 'light' ? 'INITIALIZING WAGER...' : 'RETURNING TO SAFETY...'} {(progress).toFixed(0)}%
           </div>
-          
           <div className="h-4 w-full bg-gray-900 border-2 border-cyan-600 skew-x-[-20deg]">
             <div 
               className="h-full bg-cyan-400 transition-all duration-75 ease-linear shadow-[0_0_10px_rgba(34,211,238,0.8)]"
@@ -118,6 +129,18 @@ export default function App() {
         </div>
       </div>
 
+      {/* Wager Modal */}
+      {showWagerModal && (
+          <WagerModal 
+              onConfirm={() => {
+                  setShowWagerModal(false);
+                  switchWorld(); 
+              }}
+              onCancel={() => {
+                  setShowWagerModal(false); 
+              }}
+          />
+      )}
     </div>
   );
 }
