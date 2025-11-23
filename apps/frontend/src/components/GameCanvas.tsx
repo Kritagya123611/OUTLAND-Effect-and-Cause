@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import bg from '../assets/bg.png';
 import robot from '../assets/robot.png';
-
+import { useGameStore } from '../stores/useGameStore';
 
 // --- Constants for Game Balancing ---
 const GAME_CONFIG = {
@@ -905,7 +905,7 @@ const Game = () => {
             private killEnemy(enemy: Enemy) {
                 this.createExplosion(enemy.sprite.x, enemy.sprite.y, 0xe74c3c, 10);
                 enemy.sprite.destroy();
-                this.score += 100;
+                useGameStore.getState().increaseScore(100);
                 this.enemyList = this.enemyList.filter(e => e !== enemy);
             }
 

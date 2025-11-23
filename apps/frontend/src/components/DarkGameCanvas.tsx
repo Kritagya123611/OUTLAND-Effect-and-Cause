@@ -5,6 +5,8 @@ import Phaser from 'phaser';
 // Reusing same assets
 import bg from '../assets/space_bg.jpg';
 import robot from '../assets/robot.png';
+import { useGameStore } from '../stores/useGameStore';
+
 
 // --- Constants for Dark World Balancing ---
 const GAME_CONFIG = {
@@ -529,7 +531,7 @@ this.isSpawningEnemy = false;
             private killEnemy(en: Enemy) { 
                 this.createExplosion(en.sprite.x, en.sprite.y, 0xe74c3c, 10);
                 en.sprite.destroy(); 
-                this.score+=100; 
+                useGameStore.getState().increaseScore(100);
                 this.enemyList = this.enemyList.filter(e => e !== en); 
             }
 private spawnPowerUp() { 

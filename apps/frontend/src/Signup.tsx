@@ -1,3 +1,4 @@
+// apps/frontend/src/Signup.tsx
 import { useCallback } from "react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import {
@@ -12,24 +13,8 @@ import { Lock, Unlock, Zap, ShieldAlert, Terminal } from "lucide-react";
 // --- ASSETS (Ensure these match your project structure or remove if using icons only) ---
 // You can use the icons provided in lucide-react as placeholders if images aren't available
 
-export default function LoginWrapper() {
-  const endpoint = "https://api.mainnet-beta.solana.com";
 
-  const wallets = [
-    new PhantomWalletAdapter(),
-    new SolflareWalletAdapter({ network: WalletAdapterNetwork.Mainnet })
-  ];
-
-  return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <Login />
-      </WalletProvider>
-    </ConnectionProvider>
-  );
-}
-
-function Login() {
+export default function Login() {
   const navigate = useNavigate();
   const { connect, disconnect, select, connected, connecting, wallet } = useWallet();
 
