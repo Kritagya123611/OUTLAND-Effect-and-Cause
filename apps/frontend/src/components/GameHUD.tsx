@@ -65,10 +65,10 @@ export default function GameHUD() {
             </div>
 
             {/* --- NEW: SHOP BUTTON (Left Side) --- */}
-            <div className="absolute top-40 left-6 pointer-events-auto" style={glitchStyle}>
+            <div className="absolute top-9 left-6 pointer-events-auto" style={glitchStyle}>
                 <button 
                     onClick={() => setIsShopOpen(true)}
-                    className="group relative bg-amber-400 border-2 border-amber-400 p-3 skew-x-[-12deg] hover:bg-amber-400 "
+                    className="relative border-2 border-black bg-amber-400 p-3 skew-x-[-12deg] hover:bg-amber-400"
                 >
                     <div className="skew-x-[12deg] flex items-center gap-2">
                         <ShoppingCart size={20} />

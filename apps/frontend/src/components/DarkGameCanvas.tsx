@@ -218,9 +218,6 @@ create() {
                 
                 this.physics.add.overlap(this.player, this.powerUps, this.onPowerUpCollect as any, undefined, this);
 
-                // 6. UI
-                this.createUI();
-
                 // 7. Initial Spawn
                 this.spawnEnemy();
             }
@@ -463,27 +460,29 @@ this.isSpawningEnemy = false;
                 });
             }
 
-            private createUI() {
-                this.healthBar = this.add.graphics().setScrollFactor(0).setDepth(1001);
-                this.ammoText = this.add.text(20, 20, '', { fontSize: '20px', color: '#fff' }).setScrollFactor(0).setDepth(1001);
-                this.weaponText = this.add.text(20, 50, '', { fontSize: '18px', color: '#ff0' }).setScrollFactor(0).setDepth(1001);
-                this.grenadeText = this.add.text(20, 80, '', { fontSize: '18px', color: '#0f0' }).setScrollFactor(0).setDepth(1001);
-                this.scoreText = this.add.text(20, 110, '', { fontSize: '24px', color: '#fff' }).setScrollFactor(0).setDepth(1001);
-            }
-
             private updateUI() {
-                this.healthBar.clear();
-                this.healthBar.fillStyle(0x000000, 0.5);
-                this.healthBar.fillRect(20, this.cameras.main.height - 40, 200, 20);
-                this.healthBar.fillStyle(0x00ff00, 1);
-                this.healthBar.fillRect(20, this.cameras.main.height - 40, 200 * (this.playerHealth / GAME_CONFIG.PLAYER_MAX_HEALTH), 20);
-                
-                this.ammoText.setText(`Ammo: ${this.currentWeapon.ammo}/${this.currentWeapon.maxAmmo}`);
-                this.weaponText.setText(`Weapon: ${this.currentWeapon.name}`);
-                this.grenadeText.setText(`Grenades: ${this.grenadeCount}`);
-                this.scoreText.setText(`Score: ${this.score}`);
-            }
+                // 1. Sync State to React Store (This fixes the HUD)
+                useGameStore.getState().setGameStats({
+                    health: this.playerHealth,
+                    maxHealth: GAME_CONFIG.PLAYER_MAX_HEALTH,
+                    ammo: this.currentWeapon.ammo,
+                    maxAmmo: this.currentWeapon.maxAmmo,
+                    weaponName: this.currentWeapon.name.toUpperCase(),
+                    grenades: this.grenadeCount,
+                    isReloading: this.isReloading,
+                    // Calculate glitch intensity based on low health
+                    glitchIntensity: this.playerHealth < 30 ? (30 - this.playerHealth) / 30 : 0
+                });
 
+                // 2. Remove the old Phaser Text objects
+                // You should delete these lines from your createUI function entirely 
+                // so you don't have duplicate text on screen.
+                /*
+                this.healthBar.clear();
+                this.ammoText.setText(...);
+                this.weaponText.setText(...);
+                */
+            }
             // --- Utils ---
             private reloadWeapon() {
                  if(!this.isReloading) {
