@@ -1,35 +1,4 @@
 // File: apps/frontend/src/components/GameCanvas.tsx
-//
-// ============================================
-// HOW TO ADD ANIMATED SPRITES
-// ============================================
-// 
-// 1. Prepare your sprite sheets:
-//    - Horizontal strip format: [frame1][frame2][frame3]...
-//    - Recommended: 32x48 pixels per frame (adjust in code)
-//    - Place sprite sheets in: apps/frontend/src/assets/
-//
-// 2. In the preload() method, uncomment and add:
-//    this.load.spritesheet('player', require('../assets/player-spritesheet.png'), {
-//        frameWidth: 32,
-//        frameHeight: 48,
-//    });
-//    this.load.spritesheet('enemy', require('../assets/enemy-spritesheet.png'), {
-//        frameWidth: 32,
-//        frameHeight: 48,
-//    });
-//
-// 3. In the create() method, uncomment the animation creation code
-//    and adjust frame numbers to match your sprite sheet layout
-//
-// 4. The game will automatically use sprites if loaded, otherwise falls back to rectangles
-//
-// Example sprite sheet layout:
-//    Frames 0-3: Idle animation
-//    Frames 4-7: Walk animation
-//    Frames 8-10: Jump animation
-//
-// ============================================
 
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
@@ -231,6 +200,23 @@ const Game = () => {
             private enemySpawnTimer: number = 0;
             private powerUpSpawnTimer: number = 0;
 
+            // World State
+            private currentWorld: 'A' | 'B' = 'A'; // 'A' = Cyberpunk, 'B' = Dark World
+            
+            // Physics configs per world
+            private WORLD_CONFIGS = {
+                A: {
+                    GRAVITY_Y: 650,
+                    PLAYER_SPEED: 180,
+                    BG_COLOR: '#1a1a2e',
+                },
+                B: {
+                    GRAVITY_Y: 1200, // heavier!
+                    PLAYER_SPEED: 120, // sluggish!
+                    BG_COLOR: '#16161e', // darker
+                },
+            };
+
             constructor() {
                 super('MainScene');
             }
@@ -269,45 +255,6 @@ const Game = () => {
 
             create() {
                 this.cameras.main.setBackgroundColor('#1a1a2e');
-
-                // ============================================
-                // CREATE ANIMATIONS (if using sprite sheets)
-                // ============================================
-                // Uncomment and configure when you have sprite sheets loaded:
-                //
-                // // Player animations
-                // this.anims.create({
-                //     key: 'player-idle',
-                //     frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
-                //     frameRate: 8,
-                //     repeat: -1
-                // });
-                // this.anims.create({
-                //     key: 'player-walk',
-                //     frames: this.anims.generateFrameNumbers('player', { start: 4, end: 7 }),
-                //     frameRate: 10,
-                //     repeat: -1
-                // });
-                // this.anims.create({
-                //     key: 'player-jump',
-                //     frames: this.anims.generateFrameNumbers('player', { start: 8, end: 10 }),
-                //     frameRate: 10,
-                //     repeat: 0
-                // });
-                //
-                // // Enemy animations
-                // this.anims.create({
-                //     key: 'enemy-idle',
-                //     frames: this.anims.generateFrameNumbers('enemy', { start: 0, end: 3 }),
-                //     frameRate: 8,
-                //     repeat: -1
-                // });
-                // this.anims.create({
-                //     key: 'enemy-walk',
-                //     frames: this.anims.generateFrameNumbers('enemy', { start: 4, end: 7 }),
-                //     frameRate: 10,
-                //     repeat: -1
-                // });
 
                 // 1. World Setup
                 this.setupWorldAndCamera();
