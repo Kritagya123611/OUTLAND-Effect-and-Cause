@@ -27,6 +27,7 @@ const WeaponType = {
     SNIPER: 'sniper',
     ROCKET_LAUNCHER: 'rocket',
     MINIGUN: 'minigun',
+    BANISHER: 'banisher',
 } as const;
 
 type WeaponType = typeof WeaponType[keyof typeof WeaponType];
@@ -61,6 +62,20 @@ const WEAPONS: Record<WeaponType, Weapon> = {
         color: 0xffff00,
         size: 3,
     },
+    [WeaponType.BANISHER]: {
+    type: WeaponType.BANISHER,
+    name: 'Void Caster',
+    damage: 0, // It doesn't kill; it displaces.
+    fireRate: 400,
+    bulletSpeed: 900,
+    ammo: 50,
+    maxAmmo: 50,
+    reloadTime: 2000,
+    spread: 0,
+    bulletCount: 1,
+    color: 0x9b26b6, // NEON PURPLE
+    size: 6,
+},
     [WeaponType.RIFLE]: {
         type: WeaponType.RIFLE,
         name: 'Assault Rifle',
@@ -158,6 +173,72 @@ const Game = () => {
         if (gameRef.current) return;
 
         class MainScene extends Phaser.Scene {
+
+            private banishEnemy(enemy: Enemy) {
+                const sprite = enemy.sprite;
+                const x = sprite.x;
+                const y = sprite.y;
+
+                // 1. Stop movement immediately
+                if (sprite.body) {
+                    (sprite.body as Phaser.Physics.Arcade.Body).enable = false;
+                }
+
+                // 2. Update Store (for Score/HUD)
+                useGameStore.getState().incrementBanished(); // Ensure this exists in your store
+                useGameStore.getState().increaseScore(500);
+
+                // 3. VISUALS: "Spaghettification" Glitch Tween
+                // Stretches the enemy tall and thin before disappearing
+                this.tweens.add({
+                    targets: sprite,
+                    scaleY: 4,       // Stretch vertical
+                    scaleX: 0.05,    // Shrink horizontal
+                    alpha: 0,        // Fade out
+                    tint: 0xff00ff,  // Turn Neon Magenta
+                    duration: 250,
+                    ease: 'Power2',
+                    onComplete: () => {
+                        sprite.destroy();
+                    }
+                });
+
+                // 4. VISUALS: Upward Void Particles
+                const emitter = this.add.particles(x, y, 'pixel', {
+                    speed: { min: 50, max: 200 },
+                    angle: { min: 0, max: 360 },
+                    scale: { start: 1, end: 0 },
+                    blendMode: 'ADD',
+                    lifespan: 500,
+                    tint: 0x9b26b6, // Deep Purple
+                    emitting: false,
+                    gravityY: -600  // Particles float UP (Anti-gravity feel)
+                });
+                emitter.explode(20);
+                this.time.delayedCall(600, () => emitter.destroy());
+
+                // 5. VISUALS: "BANISHED" Text popup
+                const text = this.add.text(x, y - 40, "BANISHED", {
+                    fontSize: '16px',
+                    color: '#d946ef', // Fuchsia
+                    fontStyle: 'bold',
+                    stroke: '#000',
+                    strokeThickness: 3
+                }).setOrigin(0.5);
+
+                // Float text up and fade out
+                this.tweens.add({
+                    targets: text,
+                    y: y - 100,
+                    alpha: 0,
+                    duration: 1000,
+                    onComplete: () => text.destroy()
+                });
+
+                // Remove from internal list so it doesn't keep shooting
+                this.enemyList = this.enemyList.filter(e => e !== enemy);
+            }
+
             // Core objects
             private player!: Phaser.GameObjects.Sprite;
             private gun!: Phaser.GameObjects.Rectangle;
@@ -317,6 +398,9 @@ const Game = () => {
                 // 7. Initial spawns
                 this.spawnEnemy();
                 this.spawnEnemy();
+
+                //initial weapon is BANISHER
+                this.currentWeapon = { ...WEAPONS[WeaponType.BANISHER] };
             }
 
             update(time: number, delta: number) {
@@ -948,21 +1032,30 @@ private updateUI() {
             }
 
             private onBulletHitEnemy(bullet: Phaser.GameObjects.Image, enemy: Phaser.GameObjects.Rectangle) {
-                const enemyData = this.enemyList.find(e => e.sprite === enemy);
-                if (enemyData) {
-                    enemyData.health -= this.currentWeapon.damage;
-                    this.createImpactEffect(bullet.x, bullet.y, 0xe74c3c);
-                    
-                    if (enemyData.health <= 0) {
-                        this.killEnemy(enemyData);
-                    }
-                }
-                
+                // Disable bullet physics immediately so it doesn't hit multiple times
                 if (bullet.body) {
                     (bullet.body as Phaser.Physics.Arcade.Body).enable = false;
                 }
                 bullet.setActive(false);
                 bullet.setVisible(false);
+
+                const enemyData = this.enemyList.find(e => e.sprite === enemy);
+                if (!enemyData) return;
+
+                // --- NEW: CHECK FOR BANISHMENT ---
+                if (this.currentWeapon.type === WeaponType.BANISHER) {
+                    this.banishEnemy(enemyData); // <--- Trigger the glitch effect
+                    return; // Stop here, do not deal normal damage
+                }
+                // ---------------------------------
+
+                // Standard Damage Logic
+                enemyData.health -= this.currentWeapon.damage;
+                this.createImpactEffect(bullet.x, bullet.y, 0xe74c3c);
+                
+                if (enemyData.health <= 0) {
+                    this.killEnemy(enemyData);
+                }
             }
 
             private onRocketHitWall(rocket: Phaser.GameObjects.Image, _wall: Phaser.GameObjects.Rectangle) {

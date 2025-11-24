@@ -30,6 +30,9 @@ interface GameState {
   
   // One big action to sync everything frame-by-frame
   setGameStats: (stats: Partial<GameState>) => void;
+  // --- NEW: BANISHMENT STATE ---
+  banishedCount: number;
+  incrementBanished: () => void;
 }
 
 export const useGameStore = create<GameState>((set) => ({
@@ -61,4 +64,8 @@ export const useGameStore = create<GameState>((set) => ({
 
   // Sync Action
   setGameStats: (stats) => set((state) => ({ ...state, ...stats })),
+
+  // Default 0
+  banishedCount: 0,
+  incrementBanished: () => set((state) => ({ banishedCount: state.banishedCount + 1 })),
 }));
