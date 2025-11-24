@@ -404,6 +404,7 @@ const Game = () => {
             }
 
             update(time: number, delta: number) {
+                
                 if (!this.player || !this.player.active) return;
                 
                 // Movement & Jetpack

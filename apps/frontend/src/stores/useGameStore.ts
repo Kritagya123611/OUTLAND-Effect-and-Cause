@@ -33,6 +33,7 @@ interface GameState {
   // --- NEW: BANISHMENT STATE ---
   banishedCount: number;
   incrementBanished: () => void;
+  
 }
 
 export const useGameStore = create<GameState>((set) => ({

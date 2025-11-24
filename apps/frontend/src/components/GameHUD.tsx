@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useGameStore } from '../stores/useGameStore';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Zap } from 'lucide-react';
 import ShopModal from './ShopModal'; // <--- 1. IMPORT THIS
+import LeaderboardModal from './LeaderboardModal';
+import { Trophy } from 'lucide-react'; // Import Trophy icon
 
 export default function GameHUD() {
     const {
@@ -19,6 +21,8 @@ export default function GameHUD() {
 
     // Local state for the Shop
     const [isShopOpen, setIsShopOpen] = useState(false);
+    //state for leaderboard
+    const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
     const healthPercent = (health / maxHealth) * 100;
     const healthSegments = 10;
@@ -26,6 +30,7 @@ export default function GameHUD() {
 
     // Glitch effect - update on intensity change
     const [glitchOffset, setGlitchOffset] = useState({ x: 0, y: 0, hue: 0 });
+    
     
     useEffect(() => {
         if (glitchIntensity > 0) {
@@ -140,6 +145,18 @@ export default function GameHUD() {
                 </div>
             </div>
 
+            <div className="absolute top-40 right-6 pointer-events-auto" style={glitchStyle}>
+    <button 
+        onClick={() => setIsLeaderboardOpen(true)}
+        className="group relative bg-black/80 border-2 border-purple-500 p-3 skew-x-[12deg] hover:bg-purple-500 hover:text-black transition-all duration-200"
+    >
+        <div className="skew-x-[-12deg] flex items-center gap-2">
+            <span className="font-white tracking-widest text-sm">TOP EARNERS</span>
+            <Trophy size={18} />
+        </div>
+    </button>
+</div>
+
             {/* Bottom Center - Ammo Counter */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2" style={glitchStyle}>
                 <div className={`relative border-2 border-amber-400 bg-black/80 backdrop-blur-sm p-6 skew-x-[-12deg] transition-all duration-75 ${
@@ -191,6 +208,14 @@ export default function GameHUD() {
                     </div>
                 </div>
             </div>
+
+            {isLeaderboardOpen && (
+    <div className="fixed inset-0 z-[100] pointer-events-auto flex items-center justify-center">
+        <LeaderboardModal onClose={() => setIsLeaderboardOpen(false)} />
+    </div>
+)}
+
+            
         </div>
     );
 }
