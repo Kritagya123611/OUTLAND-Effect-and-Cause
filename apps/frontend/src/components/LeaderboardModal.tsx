@@ -1,3 +1,4 @@
+// apps/frontend/src/components/LeaderboardModal.tsx
 import React from 'react';
 import { X, Trophy, TrendingUp, Wallet } from 'lucide-react';
 
@@ -12,6 +13,11 @@ const LEADERS = [
     { rank: 3, name: "Solana_Whale_X", profit: "+42.0 SOL", winRate: "75%", status: "OFFLINE" },
     { rank: 4, name: "Rekt_City_Mayor", profit: "+12.4 SOL", winRate: "61%", status: "ONLINE" },
     { rank: 5, name: "Paper_Hands_007", profit: "-2.1 SOL", winRate: "45%", status: "LIQUIDATED" },
+    { rank: 6, name: "HODL_Master", profit: "+5.6 SOL", winRate: "53%", status: "ONLINE" },
+    { rank: 7, name: "CryptoNinja", profit: "+8.3 SOL", winRate: "67%", status: "IN-GAME" },
+    { rank: 8, name: "BlockChainBrawler", profit: "-4.7 SOL", winRate: "39%", status: "OFFLINE" },
+    { rank: 9, name: "DeFi_Destroyer", profit: "+15.0 SOL", winRate: "72%", status: "ONLINE" },
+    { rank: 10, name: "NFT_Nomad", profit: "+3.2 SOL", winRate: "50%", status: "IN-GAME" },
 ];
 
 export default function LeaderboardModal({ onClose }: Props) {
