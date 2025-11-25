@@ -1034,6 +1034,8 @@ private updateUI() {
 
             private onBulletHitEnemy(bullet: Phaser.GameObjects.Image, enemy: Phaser.GameObjects.Rectangle) {
                 // Disable bullet physics immediately so it doesn't hit multiple times
+                // When bullet hits enemy:
+useGameStore.getState().addKill();
                 if (bullet.body) {
                     (bullet.body as Phaser.Physics.Arcade.Body).enable = false;
                 }
