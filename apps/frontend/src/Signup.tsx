@@ -147,7 +147,7 @@ export default function Login() {
                </div>
 
                <button
-                  onClick={() => navigate("/game")}
+                  onClick={() => navigate("/Armory")}
                   disabled={!connected}
                   className={`
                     w-full py-6 skew-x-[-12deg] transition-all duration-300 group relative overflow-hidden

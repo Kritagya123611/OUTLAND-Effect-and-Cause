@@ -5,6 +5,8 @@ import App from './App';
 import Signup from './Signup'; // Rename your file to LoginWrapper if needed
 import Landing from './Landing';
 import { SolanaContext } from './contexts/SolanaContext'; // Use the one we made in Phase 1
+import PredictionTerminal from './PredictionTerminal';
+import TacticalArmory from './TacticalArmory'; 
 import './index.css';
 
 const router = createBrowserRouter([
@@ -19,6 +21,14 @@ const router = createBrowserRouter([
   {
     path: "/game",
     element: <App />,
+  },
+  {
+    path: "/prediction",
+    element: <PredictionTerminal />,
+  },
+  {
+    path: "/armory",
+    element: <TacticalArmory />,
   },
 ]);
 
