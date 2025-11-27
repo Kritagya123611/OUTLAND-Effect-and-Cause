@@ -154,6 +154,23 @@ const PredictionTerminal = () => {
 
             {/* ACTION BUTTON */}
             <button 
+                onClick={() => navigate("/streaming")}
+                className="relative w-full group overflow-hidden bg-amber-500 p-6 transition-all hover:bg-white"
+            >
+                <div className="relative z-10 flex items-center justify-between">
+                    <span className="text-2xl font-black italic uppercase tracking-widest text-black">
+                        GO LIVE
+                    </span>
+                    <Lock className="w-6 h-6 text-black" />
+                </div>
+                {/* Hover Effect */}
+                <div className="absolute inset-0 bg-white transform translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
+            </button>
+
+            <br></br>
+
+            {/* ACTION BUTTON */}
+            <button 
                 onClick={() => navigate("/game")}
                 className="relative w-full group overflow-hidden bg-amber-500 p-6 transition-all hover:bg-white"
             >

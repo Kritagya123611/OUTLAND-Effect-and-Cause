@@ -7,6 +7,7 @@ import Landing from './Landing';
 import { SolanaContext } from './contexts/SolanaContext'; // Use the one we made in Phase 1
 import PredictionTerminal from './PredictionTerminal';
 import TacticalArmory from './TacticalArmory'; 
+import StreamingArena from './StreamingArena';
 import './index.css';
 
 const router = createBrowserRouter([
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
   {
     path: "/armory",
     element: <TacticalArmory />,
+  },
+  {
+    path: "/streaming",
+    element: <StreamingArena />,
   },
 ]);
 
