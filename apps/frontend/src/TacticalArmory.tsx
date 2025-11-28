@@ -1,4 +1,4 @@
-// TacticalArmory.jsx
+// TacticalArmory.tsx
 import React, { useState } from 'react';
 import { Shield, Zap, Crosshair, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

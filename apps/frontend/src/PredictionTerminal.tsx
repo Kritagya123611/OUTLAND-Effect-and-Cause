@@ -1,4 +1,4 @@
-// PredictionTerminal.jsx
+// PredictionTerminal.tsx
 import React, { useState } from 'react';
 import { Target, TrendingUp, AlertTriangle, Crosshair, Lock, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

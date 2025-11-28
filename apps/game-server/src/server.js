@@ -1,9 +1,8 @@
-import express from 'express';
-import cors from 'cors';
-import http from 'http';
-import { Server } from 'socket.io';
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import cors from "cors";
 
-// Initialize App
 const app = express();
 app.use(cors());
 
@@ -15,93 +14,97 @@ const io = new Server(server, {
   }
 });
 
-// --- GLOBAL STATE (In Memory) ---
-// In production, use Redis for this
-let slots = [
-  { id: 0, status: 'empty' },
-  { id: 1, status: 'empty' },
-  { id: 2, status: 'empty' },
-  { id: 3, status: 'empty' },
-];
-
-let chatHistory = [];
-
-// --- HELPER: MOCK VIDEO TOKEN GENERATION ---
-// In a real app, import 'livekit-server-sdk' and generate a real token here
-const generateVideoToken = (roomName, participantName) => {
-  console.log(`Generating token for ${participantName} in ${roomName}`);
-  return "mock_token_eyJh..."; 
+// --- IN-MEMORY DATABASE ---
+let globalState = {
+  players: {}, // Stores { socketId: { username, loadout, prediction, wallet } }
+  marketPool: 0 // Total SOL bet
 };
 
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  console.log(`[UPLINK ESTABLISHED] :: ID ${socket.id}`);
 
-  // 1. Send initial state to the new user
-  socket.emit('state_update', slots);
-  socket.emit('chat_history', chatHistory);
-
-  // 2. Handle "Start Streaming" Request
-  socket.on('claim_slot', ({ slotId, username }) => {
-    // Validation
-    if (slots[slotId].status !== 'empty') {
-      return socket.emit('error', 'Slot already taken');
-    }
-
-    // Update State
-    slots[slotId] = {
-      id: slotId,
-      status: 'live',
-      user: username,
-      viewers: 0,
-      socketId: socket.id // Track who owns the slot
+  // 1. HANDLE LOADOUT SELECTION
+  socket.on('select_loadout', (data) => {
+    const player = globalState.players[socket.id] || { username: `OPERATOR_${socket.id.slice(0,3)}` };
+    
+    globalState.players[socket.id] = {
+      ...player,
+      tier: data.tierId,
+      wager: data.betAmount,
+      status: 'ARMED'
     };
 
-    // Generate Video Token for the user
-    const token = generateVideoToken('arena-1', username);
-
-    // Tell the user they succeeded and give them the token
-    socket.emit('slot_claimed', { slotId, token });
-
-    // Broadcast new state to EVERYONE else
-    io.emit('state_update', slots);
-    
-    // System Message
-    const sysMsg = { user: 'SYSTEM', text: `${username} has entered the arena!`, type: 'system' };
-    chatHistory.push(sysMsg);
-    io.emit('chat_message', sysMsg);
+    console.log(`[ARMORY] Player ${socket.id.slice(0,4)} selected TIER ${data.tierId}`);
+    socket.emit('loadout_confirmed', { success: true });
   });
 
-  // 3. Handle Leaving / Disconnecting
-  const handleLeave = () => {
-    // Find if this socket occupied a slot
-    const slotIndex = slots.findIndex(s => s.socketId === socket.id);
-    
-    if (slotIndex !== -1) {
-      const username = slots[slotIndex].user;
-      
-      // Reset the slot
-      slots[slotIndex] = { id: slotIndex, status: 'empty' };
-      
-      // Notify everyone
-      io.emit('state_update', slots);
-      io.emit('chat_message', { user: 'SYSTEM', text: `${username} disconnected.`, type: 'system' });
+  // 2. HANDLE PREDICTION LOCK
+  socket.on('lock_prediction', (data) => {
+    const player = globalState.players[socket.id] || {};
+
+    globalState.players[socket.id] = {
+      ...player,
+      prediction: data.kills,
+      payout: data.potentialPayout,
+      status: 'READY_TO_DEPLOY'
+    };
+
+    globalState.marketPool += parseFloat(player.wager || 0);
+
+    // Broadcast this huge bet to EVERYONE (Hype factor for judges)
+    io.emit('chat_message', {
+      user: 'SYSTEM',
+      text: `NEW CHALLENGER: ${player.username || 'UNK'} WAGERED ${player.wager} SOL ON ${data.kills} KILLS`,
+      type: 'system'
+    });
+
+    console.log(`[PREDICTION] Player ${socket.id.slice(0,4)} locked: ${data.kills} Kills`);
+    socket.emit('prediction_locked', { success: true });
+  });
+
+  // 3. FETCH SESSION DATA (New for UI Display)
+  socket.on('get_session_data', () => {
+    const player = globalState.players[socket.id];
+    if (player) {
+      socket.emit('session_data', player);
     }
-  };
+  });
 
-  socket.on('leave_slot', handleLeave);
-  socket.on('disconnect', handleLeave);
+  // 4. STREAMING LOGIC
+  let slots = [
+    { id: 0, status: 'empty' }, { id: 1, status: 'empty' }, 
+    { id: 2, status: 'empty' }, { id: 3, status: 'empty' }
+  ];
 
-  // 4. Handle Chat
-  socket.on('send_message', (msg) => {
-    // Sanitize and broadcast
-    const newMsg = { ...msg, timestamp: Date.now() };
-    chatHistory.push(newMsg);
-    if (chatHistory.length > 50) chatHistory.shift(); // Keep history short
-    io.emit('chat_message', newMsg);
+  socket.emit('state_update', slots);
+
+  socket.on('claim_slot', ({ slotId, username }) => {
+    if (slots[slotId].status !== 'empty') return;
+    
+    // Update the slot
+    slots[slotId] = { id: slotId, status: 'live', user: username, viewers: 0, socketId: socket.id };
+    
+    // Update player status
+    if(globalState.players[socket.id]) {
+        globalState.players[socket.id].status = 'LIVE_BROADCAST';
+    }
+
+    io.emit('state_update', slots);
+    console.log(`[STREAM] ${username} is LIVE on Slot ${slotId}`);
+  });
+
+  // 5. CHAT
+  socket.on('send_message', (data) => {
+    io.emit('chat_message', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`[UPLINK LOST] :: ID ${socket.id}`);
+    delete globalState.players[socket.id];
   });
 });
 
 const PORT = 3001;
 server.listen(PORT, () => {
-  console.log(`Backend Server running on port ${PORT}`);
+  console.log(`>> TACTICAL SERVER OPERATIONAL ON PORT ${PORT}`);
 });
