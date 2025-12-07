@@ -97,6 +97,34 @@ An in-game shop that respects the blockchain state.
 
 ---
 
+##  Combat Protocols: Operator Manual
+
+Success in the **Outland** depends on three factors: Latency, Aim, and Dimensional Awareness. Master the controls to ensure efficient liquidation.
+
+### The Input Map
+| Key | Action | Description |
+| :--- | :--- | :--- |
+| **`W` `A` `S` `D`** | **Navigation** | Standard tactical movement. |
+| **`MOUSE`** | **Ballistics** | Look / Aim. Precision is your only asset. |
+| **`LMB`** | **Discharge** | Fire weapon. Ammo is unlimited; reload time is the penalty. |
+| **`SPACE`** | **REALITY BREACH** | **[CRITICAL MECHANIC]** Phase between the **Light Realm** and **Shadow Realm**. |
+
+###  The Reality Breach Mechanic
+Outland is not played on a single plane. The arena exists in two superimposed dimensions.
+* **The Light Realm:** Visible to all. Standard combat.
+* **The Shadow Realm:** A dark, mirror dimension.
+* **Tactical Usage:** Press **`SHIFT`** to phase out of the Light Realm to escape fire, flank your opponent unseen, and pop back into reality behind them for the execution.
+    * *Warning:* You cannot shoot enemies while you are in a different dimension than them. You must phase back to the same plane to deal damage.
+
+###  How to Engage
+1.  **Link Identity:** Connect your Solana Wallet (Phantom/Solflare).
+2.  **Select Leverage:** Choose your **Risk Tier** (e.g., 0.1 SOL). This locks your funds into the Escrow PDA.
+3.  **Hunt:** Locate the target. Use `SPACE` to outmaneuver them.
+4.  **Liquidate:** Reduce opponent HP to 0.
+5.  **Settlement:** The Smart Contract validates the kill and instantly transfers the **Total Pot** to your wallet.
+
+---
+
 ##  System Architecture & Stack
 
 We engineered a high-performance bridge between the *Solana Blockchain* (Finality) and *Phaser Engine* (60 FPS).
