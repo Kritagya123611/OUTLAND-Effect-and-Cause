@@ -30,7 +30,7 @@
   </p>
 
   <h3>
-    <a href="[INSERT_DEPLOYED_GAME_LINK]">🔴 ENTER THE ARENA (LIVE DEMO)</a> | 
+    <a href="[[INSERT_DEPLOYED_GAME_LINK](https://outland-effect-and-cause.vercel.app/)]">🔴 ENTER THE ARENA (LIVE DEMO)</a> | 
     <a href="[INSERT_YOUTUBE_LINK]">🎬 WATCH TRAILER</a> | 
     <a href="[INSERT_DEVPOST_LINK]">🏆 HACKATHON SUBMISSION</a>
   </h3>
