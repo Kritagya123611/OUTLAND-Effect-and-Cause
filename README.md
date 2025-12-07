@@ -30,10 +30,9 @@
   </p>
 
   <h3>
-    <a href="[[INSERT_DEPLOYED_GAME_LINK](https://outland-effect-and-cause.vercel.app/)]">🔴 ENTER THE ARENA (LIVE DEMO)</a> | 
-    <a href="[INSERT_YOUTUBE_LINK]">🎬 WATCH TRAILER</a> | 
-    <a href="[INSERT_DEVPOST_LINK]">🏆 HACKATHON SUBMISSION</a>
-  </h3>
+    <a href="https://outland-effect-and-cause.vercel.app/">🔴 ENTER THE ARENA (LIVE DEMO)</a> | 
+    <a href="https://www.youtube.com/watch?v=XnHkBGVhAd4">🎬 WATCH TRAILER</a> | 
+</h3>
 </div>
 
 ---
@@ -52,27 +51,27 @@ Most blockchain games are passive "click-to-earn" dashboards that rely on inflat
 
 ## 💎 Core Features & Innovations
 
-### 1. 🎯 Prediction Protocol (Wagering Logic)
+### 1.  Prediction Protocol (Wagering Logic)
 The core of Outland is the Prediction_Market program on Solana.
 * *High-Stakes Lobbies:* Players select risk tolerance. Tier 1 (0.1 SOL) vs. Tier 3 (1.0 SOL).
 * *Atomic Settlement:* Funds are locked in a PDA (Program Derived Address). The contract logic ensures funds cannot be withdrawn until a Game_Over state is signed by the oracle.
 * *Oracle Integration:* We utilize *Pyth Network* price feeds to display the real-time USD value of the wager pool, adding psychological weight to every match.
 <img width="1880" height="862" alt="Screenshot 2025-11-26 234336" src="https://github.com/user-attachments/assets/48de5154-c740-4b2a-aff3-240a2c927ca6" />
 
-### 2. 🎒 Loadout Selection (Leverage Strategy)
+### 2.  Loadout Selection (Leverage Strategy)
 In Outland, your class isn't just a playstyle—it's your financial leverage.
 * *Tiered Entry Barriers:* We separate lobbies by capital commitment. Scout (0.1 SOL) allows for low-risk testing, while Heavy (1.0 SOL) is reserved for high-conviction players.
 * *Dynamic Yield Multipliers:* Higher risk demands higher reward. The Heavy class unlocks a 3.0x Payout Multiplier, incentivizing players to wager more liquidity for exponential returns compared to the safer 1.5x Scout tier.
 * *On-Chain Initialization:* Selecting a loadout immediately constructs the transaction payload. The UI prevents "wrong-tier" transfers by hardcoding the lamport value to the specific class selection before the wallet signature request.
 <img width="1875" height="871" alt="Screenshot 2025-11-26 234328" src="https://github.com/user-attachments/assets/d464aca2-fcc0-4088-8eef-ce31441e5989" />
 
-### 3. 📹 "Barnfight" Uplink (Social Layer)
+### 3.  "Barnfight" Uplink (Social Layer)
 We solved the "loneliness" of Web3 gaming.
 * *Face-to-Face Combat:* Using simple-peer and WebRTC, we pipe live video feeds directly into the HUD. You see your opponent's reaction the moment you liquidate them.
 * *Psychological Warfare:* This mimics the intensity of 90s LAN parties, brought to the browser.
 * *Spectator Betting:* (Beta) Spectators can join the "Barn" channel and side-bet on the active combatants.
 
-### 4. 📉 The Black Market (Diegetic Economy)
+### 4.  The Black Market (Diegetic Economy)
 An in-game shop that respects the blockchain state.
 * *Risk-Adjusted Equipment:* Purchase weapons with SOL directly from your wallet.
 * *ROI Calculation:* A "Minigun" costs *0.08 SOL. Players are forced to calculate: *Will this investment yield a kill that covers the cost? This turns every loadout decision into a financial trade.
