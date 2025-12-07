@@ -6,12 +6,11 @@ import bg from '../assets/bg.png';
 import robot from '../assets/robot.png';
 import { useGameStore } from '../stores/useGameStore';
 
-// --- Constants for Game Balancing ---
 const GAME_CONFIG = {
     PLAYER_SPEED: 180,
     JETPACK_THRUST: -380,
     GRAVITY_Y: 650,
-    FIRE_RATE: 150, // ms between shots
+    FIRE_RATE: 150, 
     PLAYER_MAX_HEALTH: 100,
     ENEMY_MAX_HEALTH: 50,
     ENEMY_SPAWN_RATE: 3000, // ms
@@ -19,7 +18,6 @@ const GAME_CONFIG = {
     GRENADE_DAMAGE: 50,
 };
 
-// --- Weapon Types ---
 const WeaponType = {
     PISTOL: 'pistol',
     RIFLE: 'rifle',
@@ -41,8 +39,8 @@ interface Weapon {
     ammo: number;
     maxAmmo: number;
     reloadTime: number;
-    spread: number; // bullet spread angle in degrees
-    bulletCount: number; // for shotgun
+    spread: number; 
+    bulletCount: number; 
     color: number;
     size: number;
 }
@@ -65,7 +63,7 @@ const WEAPONS: Record<WeaponType, Weapon> = {
     [WeaponType.BANISHER]: {
     type: WeaponType.BANISHER,
     name: 'Void Caster',
-    damage: 0, // It doesn't kill; it displaces.
+    damage: 0, 
     fireRate: 400,
     bulletSpeed: 900,
     ammo: 50,
@@ -73,7 +71,7 @@ const WEAPONS: Record<WeaponType, Weapon> = {
     reloadTime: 2000,
     spread: 0,
     bulletCount: 1,
-    color: 0x9b26b6, // NEON PURPLE
+    color: 0x9b26b6, 
     size: 6,
 },
     [WeaponType.RIFLE]: {
@@ -155,7 +153,7 @@ interface Enemy {
     lastShot: number;
     weapon: Weapon;
     targetAngle: number;
-    moveDirection: number; // -1 or 1
+    moveDirection: number; 
     lastDirectionChange: number;
 }
 
@@ -179,23 +177,21 @@ const Game = () => {
                 const x = sprite.x;
                 const y = sprite.y;
 
-                // 1. Stop movement immediately
+                
                 if (sprite.body) {
                     (sprite.body as Phaser.Physics.Arcade.Body).enable = false;
                 }
 
-                // 2. Update Store (for Score/HUD)
-                useGameStore.getState().incrementBanished(); // Ensure this exists in your store
+                
+                useGameStore.getState().incrementBanished(); 
                 useGameStore.getState().increaseScore(500);
 
-                // 3. VISUALS: "Spaghettification" Glitch Tween
-                // Stretches the enemy tall and thin before disappearing
                 this.tweens.add({
                     targets: sprite,
-                    scaleY: 4,       // Stretch vertical
-                    scaleX: 0.05,    // Shrink horizontal
-                    alpha: 0,        // Fade out
-                    tint: 0xff00ff,  // Turn Neon Magenta
+                    scaleY: 4,       
+                    scaleX: 0.05,    
+                    alpha: 0,        
+                    tint: 0xff00ff,  
                     duration: 250,
                     ease: 'Power2',
                     onComplete: () => {
@@ -203,30 +199,27 @@ const Game = () => {
                     }
                 });
 
-                // 4. VISUALS: Upward Void Particles
+                
                 const emitter = this.add.particles(x, y, 'pixel', {
                     speed: { min: 50, max: 200 },
                     angle: { min: 0, max: 360 },
                     scale: { start: 1, end: 0 },
                     blendMode: 'ADD',
                     lifespan: 500,
-                    tint: 0x9b26b6, // Deep Purple
+                    tint: 0x9b26b6, 
                     emitting: false,
-                    gravityY: -600  // Particles float UP (Anti-gravity feel)
+                    gravityY: -600  
                 });
                 emitter.explode(20);
                 this.time.delayedCall(600, () => emitter.destroy());
-
-                // 5. VISUALS: "BANISHED" Text popup
                 const text = this.add.text(x, y - 40, "BANISHED", {
                     fontSize: '16px',
-                    color: '#d946ef', // Fuchsia
+                    color: '#d946ef', 
                     fontStyle: 'bold',
                     stroke: '#000',
                     strokeThickness: 3
                 }).setOrigin(0.5);
 
-                // Float text up and fade out
                 this.tweens.add({
                     targets: text,
                     y: y - 100,
@@ -235,11 +228,11 @@ const Game = () => {
                     onComplete: () => text.destroy()
                 });
 
-                // Remove from internal list so it doesn't keep shooting
+               
                 this.enemyList = this.enemyList.filter(e => e !== enemy);
             }
 
-            // Core objects
+           
             private player!: Phaser.GameObjects.Sprite;
             private gun!: Phaser.GameObjects.Rectangle;
             private platforms!: Phaser.Physics.Arcade.StaticGroup;
@@ -249,7 +242,7 @@ const Game = () => {
             private grenades!: Phaser.Physics.Arcade.Group;
             private powerUps!: Phaser.Physics.Arcade.Group;
             private hasReceivedRocket: boolean = false;
-            // State and Inputs
+            
             private keys!: { 
                 W: Phaser.Input.Keyboard.Key; 
                 A: Phaser.Input.Keyboard.Key; 
@@ -261,7 +254,7 @@ const Game = () => {
             private lastFired: number = 0;
             private bgSprite!: Phaser.GameObjects.Image;
             
-            // Player stats
+            
             private playerHealth: number = GAME_CONFIG.PLAYER_MAX_HEALTH;
             private currentWeapon: Weapon = { ...WEAPONS[WeaponType.PISTOL] };
             private isReloading: boolean = false;
@@ -269,7 +262,7 @@ const Game = () => {
             private enemyList: Enemy[] = [];
             private powerUpList: PowerUp[] = [];
             
-            // UI Elements
+            
             private healthBar!: Phaser.GameObjects.Graphics;
             private ammoText!: Phaser.GameObjects.Text;
             private weaponText!: Phaser.GameObjects.Text;
@@ -277,14 +270,14 @@ const Game = () => {
             private scoreText!: Phaser.GameObjects.Text;
             private score: number = 0;
             
-            // Timers
+            
             private enemySpawnTimer: number = 0;
             private powerUpSpawnTimer: number = 0;
 
-            // World State
-            private currentWorld: 'A' | 'B' = 'A'; // 'A' = Cyberpunk, 'B' = Dark World
+           
+            private currentWorld: 'A' | 'B' = 'A'; 
             
-            // Physics configs per world
+            
             private WORLD_CONFIGS = {
                 A: {
                     GRAVITY_Y: 650,
@@ -292,9 +285,9 @@ const Game = () => {
                     BG_COLOR: '#1a1a2e',
                 },
                 B: {
-                    GRAVITY_Y: 1200, // heavier!
-                    PLAYER_SPEED: 120, // sluggish!
-                    BG_COLOR: '#16161e', // darker
+                    GRAVITY_Y: 1200, 
+                    PLAYER_SPEED: 120, 
+                    BG_COLOR: '#16161e', 
                 },
             };
 
@@ -306,28 +299,28 @@ const Game = () => {
                 this.load.image('bg', bg);
                 this.load.image('robot', robot);
                 
-                // Create textures for different bullet types
+                
                 const graphics = this.make.graphics({ x: 0, y: 0 });
                 graphics.setVisible(false);
                 
-                // White pixel for regular bullets
+                
                 graphics.fillStyle(0xffffff, 1);
                 graphics.fillRect(0, 0, 4, 4);
                 graphics.generateTexture('pixel', 4, 4);
                 
-                // Rocket texture
+                
                 graphics.clear();
                 graphics.fillStyle(0xff0000, 1);
                 graphics.fillRect(0, 0, 8, 8);
                 graphics.generateTexture('rocket', 8, 8);
                 
-                // Grenade texture
+                
                 graphics.clear();
                 graphics.fillStyle(0x00ff00, 1);
                 graphics.fillCircle(4, 4, 4);
                 graphics.generateTexture('grenade', 8, 8);
                 
-                // Power-up textures
+                
                 graphics.clear();
                 graphics.fillStyle(0xffff00, 1);
                 graphics.fillRect(0, 0, 16, 16);
@@ -337,15 +330,15 @@ const Game = () => {
             create() {
                 this.cameras.main.setBackgroundColor('#1a1a2e');
 
-                // 1. World Setup
+                
                 this.setupWorldAndCamera();
                 
-                // 2. Physics Objects
+               
                 this.createPlatforms();
                 this.createPlayer();
                 this.createGun();
                 
-                // 3. Weapon Systems
+                
                 this.bullets = this.physics.add.group({
                     defaultKey: 'pixel',
                     maxSize: 200
@@ -364,7 +357,7 @@ const Game = () => {
                 this.enemies = this.physics.add.group();
                 this.powerUps = this.physics.add.group();
 
-                // 4. Inputs
+               
                 this.keys = this.input.keyboard!.addKeys("W,A,S,D,R,G") as any;
                 this.input.on('pointerdown', this.handleShooting, this);
                 this.input.keyboard!.on('keydown-R', this.reloadWeapon, this);

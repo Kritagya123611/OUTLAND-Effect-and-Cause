@@ -15,7 +15,7 @@ export default function Landing() {
 
   return (
     <div className="bg-[#050505] text-white min-h-screen font-sans selection:bg-amber-500 selection:text-black overflow-x-hidden">
-      {/* GLOBAL ATMOSPHERE: Noise & Grid Overlay */}
+      
       <div
         className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]"
         style={{
@@ -24,7 +24,7 @@ export default function Landing() {
       ></div>
       <div className="fixed inset-0 pointer-events-none z-0 bg-[linear-gradient(rgba(18,16,11,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_4px,4px_100%]"></div>
 
-      {/* Header */}
+      
       <header className="fixed top-0 w-full z-50 bg-transparent pt-4">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="group cursor-pointer">
@@ -36,7 +36,7 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Desktop Nav */}
+          
           <nav className="hidden md:flex items-center gap-8">
             {["THE GAME", "ECONOMY", "ROADMAP", "WHITEPAPER"].map((item) => (
               <a
@@ -50,7 +50,7 @@ export default function Landing() {
             ))}
           </nav>
 
-          {/* Login Button */}
+          
           <div className="flex items-center gap-4">
             <button
               className="hidden md:block px-6 py-2 border border-amber-500 text-amber-500 font-black text-xl hover:bg-amber-500 hover:text-black transition skew-x-[-12deg] shadow-[0_0_15px_rgba(251,191,36,0.2)] hover:shadow-[0_0_25px_rgba(251,191,36,0.6)]"
@@ -64,7 +64,7 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        
         {isMenuOpen && (
           <nav className="md:hidden bg-black border-t border-amber-500/20 p-6 space-y-6">
             {["THE GAME", "ECONOMY", "ROADMAP", "WHITEPAPER"].map((item) => (
@@ -85,28 +85,22 @@ export default function Landing() {
           </nav>
         )}
       </header>
-
-      {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-6 overflow-hidden min-h-screen flex items-center">
- {/* Background Image Layer - Brightened (Removed dark overlays) */}
         <div className="absolute inset-0 z-0">
           <img
             src={background || "/placeholder.svg"}
             alt="Hero Background"
             className="w-full h-full object-cover object-center"
           />
-          {/* Subtle dark overlay for better text contrast */}
+         
           <div className="absolute inset-0 bg-black/25"></div>
-          {/* Only a subtle gradient at the very bottom to blend into the next section */}
+          
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#050505] to-transparent"></div>
         </div>
-
-        {/* Glow behind skull - z-0 to sit behind content but above bg */}
         <div className="absolute top-1/2 left-3/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-600/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none z-0"></div>
 
         <div className="max-w-7xl mx-auto relative z-10 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Text Content */}
             <div className="relative z-20">
               <div className="flex items-center gap-2 mb-6">
                 <div className="h-[2px] w-8 bg-amber-500"></div>
@@ -145,10 +139,7 @@ export default function Landing() {
                 </button>
               </div>
             </div>
-
-            {/* Hero Image / Asset */}
             <div className="flex justify-center relative">
-              {/* Tech Circle Background */}
               <div className="absolute inset-0 border border-amber-500/10 rounded-full scale-90 animate-pulse"></div>
               <div className="absolute inset-0 border border-white/5 rounded-full scale-75"></div>
 
@@ -163,10 +154,7 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-      {/* Call to Action / Hype Section */}
       <section className="relative py-32 px-6 bg-black overflow-hidden border-y border-zinc-800 group">
-        {/* Background gun image */}
         <img
           src={gun || "/placeholder.svg"}
           alt="weapon"
@@ -193,14 +181,10 @@ export default function Landing() {
           </button>
         </div>
       </section>
-
-      {/* Features Section */}
       <section className="py-32 px-6 bg-[#080808] relative" id="features">
-        {/* Subtle Grid Pattern for this section */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto space-y-32 relative z-10">
-          {/* --- FEATURE 1 --- */}
           <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
             <div className="relative">
               <div className="absolute -left-4 -top-8 text-8xl font-black text-white/5 select-none italic">-01</div>
@@ -225,10 +209,7 @@ export default function Landing() {
               />
             </div>
           </div>
-
-          {/* --- FEATURE 2 --- */}
           <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
-            {/* Image Left on Desktop */}
             <div className="flex justify-center lg:justify-start relative order-2 lg:order-1 group">
               <div className="absolute inset-[-20px] bg-white/5 skew-x-[-12deg] border border-white/10 group-hover:bg-white/10 transition duration-500"></div>
               <img
@@ -257,8 +238,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-      {/* Dev/Hackathon Section */}
       <section className="py-24 px-6 bg-black border-t border-zinc-800" id="hackathon">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -288,14 +267,11 @@ export default function Landing() {
 
             <div className="flex justify-center">
               <div className="relative w-full max-w-md aspect-square border-2 border-amber-500/20 bg-black flex items-center justify-center p-12 shadow-[0_0_50px_rgba(251,191,36,0.05)]">
-                {/* Logo Placeholder */}
                 <img
                   src={logo || "/placeholder.svg"}
                   alt="Studio Logo"
                   className="w-[120%] h-[120%] object-contain scale-110 drop-shadow-[0_0_15px_rgba(251,191,36,0.3)]"
                 />
-
-                {/* Tech Corners - The "Badass" UI details */}
                 <div className="absolute top-[-2px] left-[-2px] w-6 h-6 border-l-4 border-t-4 border-amber-500"></div>
                 <div className="absolute top-[-2px] right-[-2px] w-6 h-6 border-r-4 border-t-4 border-amber-500"></div>
                 <div className="absolute bottom-[-2px] left-[-2px] w-6 h-6 border-l-4 border-b-4 border-amber-500"></div>
@@ -306,9 +282,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Newsletter / Updates */}
+
       <section className="py-24 px-6 bg-amber-500 text-black relative overflow-hidden">
-        {/* Texture overlay on the yellow background */}
+
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 mix-blend-multiply"></div>
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -329,8 +305,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
       <footer className="bg-[#050505] pt-20 pb-10 px-6 border-t border-zinc-800">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">

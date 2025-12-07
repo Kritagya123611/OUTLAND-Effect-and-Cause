@@ -2,9 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from './App';
-import Signup from './Signup'; // Rename your file to LoginWrapper if needed
+import Signup from './Signup'; 
 import Landing from './Landing';
-import { SolanaContext } from './contexts/SolanaContext'; // Use the one we made in Phase 1
+import { SolanaContext } from './contexts/SolanaContext'; 
 import PredictionTerminal from './PredictionTerminal';
 import TacticalArmory from './TacticalArmory'; 
 import StreamingArena from './StreamingArena';

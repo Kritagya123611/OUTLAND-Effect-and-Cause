@@ -22,8 +22,6 @@ const PredictionTerminal = () => {
 
   return (
     <div className="h-screen w-full bg-black text-white font-sans overflow-hidden flex flex-col items-center justify-center relative">
-      
-      {/* BACKGROUND GRID */}
       <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" 
            style={{
              backgroundImage: 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)',
@@ -31,13 +29,13 @@ const PredictionTerminal = () => {
            }}>
       </div>
 
-      {/* MAIN CONTAINER - FIXED HEIGHT TO FIT SCREEN */}
+      
       <div className="relative z-10 w-full max-w-7xl h-full md:h-[85vh] flex flex-col md:flex-row border-y md:border border-zinc-800 bg-black/90 backdrop-blur-sm">
         
-        {/* LEFT COLUMN: INPUTS */}
+
         <div className="flex-1 border-r border-zinc-800 p-8 flex flex-col">
           
-          {/* Header */}
+
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-2">
                <div className="w-2 h-2 bg-amber-500 animate-pulse" />
@@ -51,7 +49,6 @@ const PredictionTerminal = () => {
             </p>
           </div>
 
-          {/* SECTION 1: KILL TARGET */}
           <div className="mb-12">
             <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">
               <Crosshair className="w-4 h-4 text-amber-500" />
@@ -83,7 +80,6 @@ const PredictionTerminal = () => {
                     EST. PROBABILITY: {option.risk}
                   </div>
                   
-                  {/* Corner Accent */}
                   {kills === option.value && (
                     <div className="absolute bottom-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-b-[20px] border-b-amber-500" />
                   )}
@@ -91,8 +87,6 @@ const PredictionTerminal = () => {
               ))}
             </div>
           </div>
-
-          {/* SECTION 2: WAGER SLIDER */}
           <div className="mt-auto">
             <div className="flex justify-between items-end mb-4">
               <label className="flex items-center gap-2 text-xs font-bold text-zinc-400 uppercase tracking-widest">
@@ -112,7 +106,7 @@ const PredictionTerminal = () => {
                 onChange={(e) => setBet(parseFloat(e.target.value))}
                 className="w-full h-2 bg-zinc-800 appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-8 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:border-0"
               />
-              {/* Visual Track Marks */}
+
               <div className="absolute bottom-0 left-0 w-full flex justify-between px-2 pointer-events-none">
                 {[...Array(10)].map((_, i) => (
                     <div key={i} className="w-px h-2 bg-zinc-800" />
@@ -123,9 +117,7 @@ const PredictionTerminal = () => {
 
         </div>
 
-        {/* RIGHT COLUMN: PREVIEW & ACTION */}
         <div className="w-full md:w-[450px] bg-zinc-900/50 flex flex-col p-8 relative overflow-hidden">
-            {/* Decorative BG text */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[200px] font-black italic text-black leading-none opacity-50 select-none pointer-events-none">
                 {kills}
             </div>
@@ -152,7 +144,6 @@ const PredictionTerminal = () => {
                 </div>
             </div>
 
-            {/* ACTION BUTTON */}
             <button 
                 onClick={() => navigate("/streaming")}
                 className="relative w-full group overflow-hidden bg-amber-500 p-6 transition-all hover:bg-white"
@@ -168,8 +159,6 @@ const PredictionTerminal = () => {
             </button>
 
             <br></br>
-
-            {/* ACTION BUTTON */}
             <button 
                 onClick={() => navigate("/game")}
                 className="relative w-full group overflow-hidden bg-amber-500 p-6 transition-all hover:bg-white"
@@ -180,7 +169,6 @@ const PredictionTerminal = () => {
                     </span>
                     <Lock className="w-6 h-6 text-black" />
                 </div>
-                {/* Hover Effect */}
                 <div className="absolute inset-0 bg-white transform translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
             </button>
             

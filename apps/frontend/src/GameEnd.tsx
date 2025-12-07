@@ -5,9 +5,6 @@ import {
   Activity, Wallet, Crosshair, BarChart3, Award, ChevronRight,
   Terminal, Share2, Copy, Monitor, Play
 } from 'lucide-react';
-// import { useGame } from './GameContext'; // Uncomment if using context
-
-// Custom DollarSignIcon (moved inside for better organization)
 const DollarSignIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
     <line x1="12" x2="12" y1="2" y2="22"/>
@@ -18,9 +15,7 @@ const DollarSignIcon = () => (
 export default function GameEnd() {
   const { state } = useLocation();
   const navigate = useNavigate();
-  // const { player } = useGame();
 
-  // Mock Data
   const result = state?.result || {
     won: true,
     actualKills: 5,
@@ -44,7 +39,6 @@ export default function GameEnd() {
   const borderColor = isWin ? 'border-green-500' : 'border-red-600';
   const bgGlow = isWin ? 'from-green-500/5' : 'from-red-500/5';
 
-  // Animations
   useEffect(() => {
     const target = parseFloat(result.payout);
     let start = 0;
@@ -64,12 +58,8 @@ export default function GameEnd() {
     return () => clearInterval(moneyTimer);
   }, [result.payout]);
 
-  // Enhanced marquee animation with CSS-in-JS equivalent via Tailwind (added custom class simulation)
-  // Note: For full marquee, add to global CSS: @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } } .animate-marquee { animation: marquee 30s linear infinite; }
-
   return (
     <div className="h-screen w-full font-sans flex flex-col relative overflow-hidden bg-[#020202] text-white selection:bg-amber-500/30">
-      {/* --- ATMOSPHERE --- */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20"
            style={{ 
              backgroundImage: 'linear-gradient(#1a1a1a 1px, transparent 1px), linear-gradient(90deg, #1a1a1a 1px, transparent 1px)', 
@@ -78,8 +68,6 @@ export default function GameEnd() {
       </div>
       <div className={`absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] opacity-40 ${bgGlow} via-transparent to-transparent`}></div>
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none"></div>
-
-      {/* --- HEADER BAR (New: Added for better orientation on all screens) --- */}
       <div className="relative z-10 flex items-center justify-between px-4 py-3 bg-black/80 border-b border-zinc-900 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full animate-pulse ${primaryColor}`} />
@@ -92,10 +80,7 @@ export default function GameEnd() {
           <span>Sector: ZONE_04</span>
         </div>
       </div>
-
-      {/* --- MAIN CONTENT AREA --- */}
       <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 h-full overflow-hidden">
-        {/* === LEFT PANEL: MISSION STATUS === */}
         <div className="lg:col-span-4 border-r border-zinc-900 bg-black/40 backdrop-blur-sm flex flex-col relative">
           <div className={`w-full h-1 ${primaryColor}`}></div>
           <div className="p-6 md:p-8 lg:p-12 flex-1 flex flex-col justify-center items-start">
@@ -127,7 +112,6 @@ export default function GameEnd() {
               </div>
             </div>
           </div>
-          {/* Combat Stats Footer - Improved grid for better mobile stacking */}
           <div className="grid grid-cols-1 sm:grid-cols-2 border-t border-zinc-900 bg-zinc-900/10">
             <div className="p-4 sm:p-6 border-b sm:border-r border-zinc-900">
               <div className="text-zinc-500 text-xs uppercase tracking-widest mb-1">Kills</div>
@@ -139,13 +123,10 @@ export default function GameEnd() {
             </div>
           </div>
         </div>
-
-        {/* === CENTER PANEL: FINANCIALS === */}
         <div className="lg:col-span-5 border-r border-zinc-900 flex flex-col justify-center items-center p-4 md:p-8 lg:p-12 bg-zinc-950/50 relative">
           <div className="absolute top-4 left-4 md:top-8 md:left-8 flex items-center gap-2 text-zinc-500 text-xs font-bold uppercase tracking-widest">
             <Wallet size={14} /> Settlement Protocol
           </div>
-          {/* The Big Receipt - Centered and responsive */}
           <div className="w-full max-w-md relative flex-1 flex items-center justify-center">
             <div className="absolute -inset-2 bg-gradient-to-b from-zinc-800 to-transparent opacity-20 blur rounded-lg"></div>
             <div className="relative bg-black border border-zinc-800 p-6 md:p-8 shadow-2xl w-full rounded-lg">
@@ -174,7 +155,6 @@ export default function GameEnd() {
                   <span className="text-zinc-600">0.00005 SOL</span>
                 </div>
               </div>
-              {/* TX Hash - Improved accessibility with better hover states */}
               <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-zinc-800">
                 <div className="text-[10px] text-zinc-500 uppercase tracking-widest mb-3">Blockchain Reference</div>
                 <a
@@ -196,8 +176,6 @@ export default function GameEnd() {
             </div>
           </div>
         </div>
-
-        {/* === RIGHT PANEL: PROGRESSION & ACTIONS === */}
         <div className="lg:col-span-3 bg-zinc-950 flex flex-col relative">
           <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
             <div className="mb-8 md:mb-12">
@@ -208,7 +186,6 @@ export default function GameEnd() {
                 </div>
                 <span className="text-amber-500 font-mono text-sm font-bold">+{result.xpGained} XP</span>
               </div>
-              {/* XP Bar - Enhanced with labels */}
               <div className="w-full">
                 <div className="flex justify-between text-xs text-zinc-500 mb-1">
                   <span>0 XP</span>
@@ -250,7 +227,6 @@ export default function GameEnd() {
               </div>
             </div>
           </div>
-          {/* ACTION AREA - Sticky bottom with better mobile handling */}
           <div className="p-4 md:p-8 border-t border-zinc-900 bg-black/80 backdrop-blur-sm lg:sticky lg:bottom-0">
             <button
               onClick={() => navigate('/armory')}
@@ -282,8 +258,6 @@ export default function GameEnd() {
           </div>
         </div>
       </div>
-
-      {/* --- SCROLLING TICKER FOOTER - Improved with better spacing and pause on hover --- */}
       <div className="relative z-20 bg-black border-t border-zinc-900 py-2 overflow-hidden flex items-center">
         <div className="flex items-center gap-8 md:gap-12 animate-marquee whitespace-nowrap text-[10px] md:text-xs font-mono text-zinc-600 uppercase tracking-widest hover:pause">
           <span className="flex items-center gap-2 min-w-fit"><div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div> GLOBAL VOLUME: 42,392 SOL</span>

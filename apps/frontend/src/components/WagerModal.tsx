@@ -39,11 +39,6 @@ export default function WagerModal({ onConfirm, onCancel }: Props) {
                 if (priceData && priceData.price) {
                     const price = priceData.price;
                     setSolPrice(price);
-
-                    // SIMULATED VOLATILITY LOGIC
-                    // In a real app, calculate volatility. For Demo:
-                    // If price is odd number -> High Volatility (1.5x), Even -> Stable (1.2x)
-                    // This ensures the judges see different states if they refresh.
                     const isVolatile = Math.floor(price) % 2 !== 0; 
                     
                     if (isVolatile) {
@@ -104,24 +99,18 @@ export default function WagerModal({ onConfirm, onCancel }: Props) {
         }
     };
 
-    // Calculate Potential Payout: (Entry * Multiplier) + (Prediction Bonus)
-    // Purely visual math for the user
     const potentialPayout = (0.1 * multiplier) + (prediction * 0.01);
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md font-mono">
             <div className="w-[550px] border-2 border-red-600 bg-gray-900 p-8 text-center shadow-[0_0_50px_rgba(220,38,38,0.5)] skew-x-[-5deg] relative overflow-hidden">
-                
-                {/* Decorative Scanlines */}
+
                 <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[size:100%_4px] pointer-events-none opacity-20"></div>
 
-                {/* HEADER */}
                 <h2 className="relative mb-2 text-4xl font-black tracking-tighter text-white">
                     PROTOCOL <span className="text-red-500">INITIATED</span>
                 </h2>
                 <div className="h-1 w-full bg-red-600 mb-6 shadow-[0_0_10px_red]"></div>
-
-                {/* ORACLE SECTION */}
                 <div className="relative mb-6 border border-gray-700 bg-black/60 p-4 text-left">
                     <div className="flex justify-between items-center mb-2">
                         <span className="text-xs text-gray-500 flex items-center gap-2">
@@ -148,8 +137,6 @@ export default function WagerModal({ onConfirm, onCancel }: Props) {
                         </div>
                     </div>
                 </div>
-
-                {/* PREDICTION SECTION */}
                 <div className="relative mb-8 text-left">
                     <p className="text-gray-400 text-sm mb-3 font-bold uppercase">Predict Your Kills (Risk Adjustment)</p>
                     <div className="flex justify-between gap-2">
@@ -168,8 +155,6 @@ export default function WagerModal({ onConfirm, onCancel }: Props) {
                         ))}
                     </div>
                 </div>
-
-                {/* SUMMARY STATS */}
                 <div className="relative mb-8 flex justify-center gap-4 text-sm font-mono border-t border-gray-800 pt-6">
                     <div className="text-center">
                         <div className="text-[10px] text-gray-500 uppercase mb-1">STAKE (SOL)</div>
@@ -183,8 +168,6 @@ export default function WagerModal({ onConfirm, onCancel }: Props) {
                         </div>
                     </div>
                 </div>
-
-                {/* ACTION BUTTONS */}
                 <div className="relative flex gap-4 justify-center">
                     <button 
                         onClick={onCancel}

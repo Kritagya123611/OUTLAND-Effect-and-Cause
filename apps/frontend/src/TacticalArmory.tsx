@@ -40,16 +40,12 @@ const TacticalArmory = () => {
 
   return (
     <div className="h-screen w-full bg-black text-white font-sans overflow-hidden flex flex-col relative">
-      
-      {/* BACKGROUND GRID (Matches your Auth Screen) */}
       <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" 
            style={{
              backgroundImage: 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)',
              backgroundSize: '40px 40px'
            }}>
       </div>
-
-      {/* HEADER SECTION */}
       <div className="relative z-10 p-6 md:p-8 border-b border-zinc-800 bg-black/80 backdrop-blur-sm flex justify-between items-end shrink-0">
         <div>
           <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white uppercase">
@@ -67,8 +63,6 @@ const TacticalArmory = () => {
            <p className="text-amber-500 font-bold tracking-wider animate-pulse">ONLINE</p>
         </div>
       </div>
-
-      {/* MAIN CONTENT - CARDS (Flex-1 ensures they fill available vertical space) */}
       <div className="relative z-10 flex-1 flex flex-col md:flex-row gap-0 md:gap-px bg-zinc-800/50">
         {tiers.map((tier) => (
           <button
@@ -83,12 +77,9 @@ const TacticalArmory = () => {
               }
             `}
           >
-            {/* Selection Indicator (Top Bar) */}
             {selectedTier === tier.id && (
               <div className="absolute top-0 left-0 w-full h-1 bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
             )}
-
-            {/* Card Content */}
             <div className="w-full">
               <div className="flex justify-between items-start mb-6">
                 <span className={`text-xs font-bold tracking-[0.2em] px-2 py-1 
@@ -108,8 +99,6 @@ const TacticalArmory = () => {
                 {tier.desc}
               </p>
             </div>
-
-            {/* Bottom Stats */}
             <div className="mt-8 space-y-1">
               <div className="flex justify-between items-end border-b border-zinc-800 pb-2 mb-2">
                 <span className="text-zinc-500 text-xs uppercase tracking-wider">Entry Fee</span>
@@ -128,11 +117,7 @@ const TacticalArmory = () => {
           </button>
         ))}
       </div>
-
-      {/* FOOTER ACTION BAR */}
       <div className="relative z-10 shrink-0 bg-black border-t border-zinc-800 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
-        
-        {/* Fast Mode Toggle */}
         <div 
           onClick={() => setFastMode(!fastMode)}
           className="flex items-center gap-4 cursor-pointer group w-full md:w-auto"
@@ -152,8 +137,6 @@ const TacticalArmory = () => {
             </div>
           </div>
         </div>
-
-        {/* Deploy Button */}
         <button 
           onClick={() => navigate("/prediction")}
           className="w-full md:flex-1 bg-amber-500 hover:bg-amber-400 text-black h-16 

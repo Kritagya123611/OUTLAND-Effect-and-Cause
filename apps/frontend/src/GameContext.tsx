@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-// Define the full player state shape
 export interface PlayerState {
   id: string;
   walletAddress: string;
@@ -28,7 +26,6 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | null>(null);
 
-// Initialize socket outside to prevent re-connections
 const socket = io('http://localhost:3001');
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -39,7 +36,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
     
-    // The server is the source of truth. When it sends 'sync_state', we update React.
     socket.on('sync_state', (data: PlayerState) => {
         console.log("State Synced:", data);
         setPlayer(data);
@@ -52,10 +48,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // --- ACTIONS ---
 
   const login = () => {
-    // Simulate wallet signature & login
     const mockWallet = `0x${Math.random().toString(16).slice(2, 10)}...`;
     socket.emit('login', { walletAddress: mockWallet });
   };
