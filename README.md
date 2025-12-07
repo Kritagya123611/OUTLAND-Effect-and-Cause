@@ -37,7 +37,7 @@
 
 ---
 
-## 📡 Transmission 001: The Setting
+##  Transmission 001: The Setting
 
 > "In the post-fiat era, liquidity is no longer printed—it is extracted. The Outland Protocol was established to resolve disputes and reallocate wealth through the only metric that cannot be forged: **Ballistics."
 
@@ -49,7 +49,7 @@ Most blockchain games are passive "click-to-earn" dashboards that rely on inflat
 
 ---
 
-## 💎 Core Features & Innovations
+##  Core Features & Innovations
 
 ### 1.  Prediction Protocol (Wagering Logic)
 The core of Outland is the Prediction_Market program on Solana.
@@ -79,7 +79,7 @@ An in-game shop that respects the blockchain state.
 
 ---
 
-## 🕹 Gameplay Loop: The Flow
+##  Gameplay Loop: The Flow
 
 1.  *Identity Verification:* User connects *Phantom* or *Solflare*. The client checks for sufficient SOL balance.
 2.  *Loadout Selection:* User selects a Class (Scout/Soldier/Heavy) and a Wager Tier.
@@ -97,7 +97,7 @@ An in-game shop that respects the blockchain state.
 
 ---
 
-## 🏗 System Architecture & Stack
+##  System Architecture & Stack
 
 We engineered a high-performance bridge between the *Solana Blockchain* (Finality) and *Phaser Engine* (60 FPS).
 
@@ -140,7 +140,7 @@ graph TD
 
 * Video: WebRTC for peer-to-peer streaming (low latency, low cost).
 
-## 💻 Local Installation & Development
+##  Local Installation & Development
 ## To run the OUTLAND protocol simulation on your local machine:
 
 Prerequisites
@@ -174,10 +174,10 @@ Bash
 cd frontend
 
 # Install dependencies
-npm install
+pnpm install
 
 # Ignite the interface
-npm run dev
+pnpm run dev
 4. Deploy Smart Contract (Devnet)
 Bash
 
@@ -193,7 +193,7 @@ solana address -k target/deploy/outland_keypair.json
 # Deploy
 anchor deploy
 ```
-## 🛡 Security & Fairness (Hackathon Note)
+##  Security & Fairness (Hackathon Note)
 * The "Oracle Problem" in FPS Games: Connecting a fast-paced shooter to a blockchain introduces a challenge: How do you prevent a user from hacking the client and telling the blockchain they won?
 
 * For this Hackathon submission, we utilize a Server-Authoritative Signer.
@@ -206,7 +206,7 @@ anchor deploy
 
 * The Smart Contract checks this signature before releasing funds. This prevents users from calling the payout function directly from the client.
 
-## 🔮 Roadmap: Phase 2
+##  Roadmap: Phase 2
 [ ] Squads Protocol: Pooled wagering for 4v4 Team Deathmatch (TDM).
 
 [ ] The Armory (NFTs): Tokenize weapons as cNFTs (Compressed NFTs) on Solana. Allow players to trade leveled-up guns on Tensor.
@@ -215,7 +215,7 @@ anchor deploy
 
 [ ] Mobile Uplink: PWA optimization for mobile browser play (Solana Mobile Stack).
 
-## 👥 The Team
+##  The Team
 Kritagya Jha - Lead Engineer & Founder
 
 Full Stack Architecture
